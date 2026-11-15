@@ -13,7 +13,8 @@
     moles:{title:'打地鼠',label:'06 / WHACK A MOLE',description:'眼疾手快，快乐就藏在下一只地鼠里。',controls:'手机：直接点击冒出的地鼠\n电脑：鼠标点击\n避开黑色炸弹，连续击中可加分',tip:'每局 60 秒。地鼠漏掉只会断连击；误点三次炸弹才会提前结束。不要点黑色带引线的炸弹。',touch:'直接点击地鼠',hint:'直接点击地鼠，连击得高分。\n60 秒挑战，小心黑色炸弹！'},
     match:{title:'连连看',label:'07 / CONNECT PAIRS',description:'找出相同图案，把快乐连成一线。',controls:'点击两张相同图案\n连线最多拐两个弯，可走外圈\n下方按钮提供提示和重排',tip:'连线不能穿过其他图案。配对成功加 2 秒，错误配对扣 3 秒；无可连接组合时自动免费重排。',touch:'点相同图案配对',hint:'点击两张相同图案，最多拐两次。\n可走外圈，下方有提示和重排。'},
     commando:{title:'合金弹头风格',label:'08 / METAL COMMANDO',description:'横穿战区，救出战友，突破钢铁防线。',controls:'按住左右按钮移动，自动射击\n点跳跃按钮 / 空格 / ↑ 跳跃\n键盘 A D / 左右键也可移动',tip:'朝移动方向自动开火，击碎木箱和囚笼。救援会恢复生命，受伤后短暂无敌。连续突破三大战区的装甲 Boss。',touch:'自动射击已开启\n左手移动，右手跳跃',hint:'左手按左右移动，右手点跳跃。\n自动射击，救援战友，击败 Boss。'},
-    hop:{title:'跳一跳',label:'09 / HOP & GO',description:'按住一点期待，跳向下一份快乐。',controls:'手机：按住下方大按钮，松手跳跃\n也可按住战场任意位置\n电脑：按住空格，松开起跳',tip:'长按跳得远，轻按跳得近。蓄力时的虚线影子提示落点，落在平台中心会连续加分。落回原平台可以重试，落空则结束。',touch:'按住蓄力，松手起跳',hint:'按住蓄力，松手跳向下一个平台。\n落在中心可获得连续加分。'}
+    hop:{title:'跳一跳',label:'09 / HOP & GO',description:'按住一点期待，跳向下一份快乐。',controls:'手机：按住下方大按钮，松手跳跃\n也可按住战场任意位置\n电脑：按住空格，松开起跳',tip:'长按跳得远，轻按跳得近。蓄力时的虚线影子提示落点，落在平台中心会连续加分。落回原平台可以重试，落空则结束。',touch:'按住蓄力，松手起跳',hint:'按住蓄力，松手跳向下一个平台。\n落在中心可获得连续加分。'},
+    warriors:{title:'街机三国志',label:'10 / THREE KINGDOMS',description:'一骑当先，横扫千军，重返热血街机。',controls:'手机：按住方向，靠近敌人自动连击\n跳跃按钮 / 空格：躲避地面攻击\n满怒点击大招 / K；J 手动攻击',tip:'开局可选关羽、赵云、张飞。上下移动对齐敌人，跳跃可躲刀。满怒大招能打断关底武将攻击，收集军粮恢复体力。三条命，突破三关获胜。',touch:'靠近敌人自动连击\n跳跃躲刀，满怒放大招',hint:'按方向靠近敌人，自动连击。\n右侧跳跃与大招，三条命突破三关。'}
   };
   const requested = new URLSearchParams(location.search).get('game');
   const id = Object.hasOwn(configs,requested) ? requested : 'breakout', config = configs[id];
@@ -40,6 +41,7 @@
     $('mini-score').textContent=String(score).padStart(6,'0');$('mini-best').textContent=String(Math.max(best,score)).padStart(6,'0');
     $('mini-lives').textContent=game.lifeLabel?.()??(id==='snake'?`长度 ${game.body.length}`:'♥ '.repeat(Math.max(0,game.lives)));
     $('mini-stage').textContent=`STAGE ${String(game.level).padStart(2,'0')}`;$('mini-status').textContent=game.status();if(id==='match'){$('hint-button').textContent=`提示 ${game.hints}`;$('shuffle-button').textContent=`重排 ${game.shuffles}`;$('hint-button').disabled=mode!=='playing'||game.hints===0;$('shuffle-button').disabled=mode!=='playing'||game.shuffles===0;}
+    if(id==='warriors'){$('warrior-choice').hidden=mode==='paused';$('warrior-select').disabled=mode==='playing'||mode==='paused';$('warrior-skill').disabled=mode!=='playing'||game.rage<100;$('warrior-skill').textContent=game.rage>=100?'大招':`怒气 ${Math.floor(game.rage)}%`;}
     $('mini-pause').disabled=!['playing','paused'].includes(mode);$('mini-pause').textContent=mode==='paused'?'▶':'Ⅱ';$('mini-pause').setAttribute('aria-label',mode==='paused'?'继续游戏':'暂停游戏');
   }
   function spark(x,y,color,n=10){for(let i=0;i<n;i++)particles.push({x,y,vx:random(-100,100),vy:random(-110,110),life:random(.2,.55),color});}
@@ -154,15 +156,19 @@
     g.draw=()=>{background('#354335');g.walls.forEach(w=>{if(w.type==='steel'){rect(w.x-15,w.y-15,30,30,'#8c9890');rect(w.x-12,w.y-12,24,24,'#64766d');rect(w.x-10,w.y-10,20,3,'#b6beb0');}else{rect(w.x-15,w.y-15,30,30,'#ad805d');for(let r=0;r<3;r++){rect(w.x-15,w.y-15+r*10,30,1,'#644e3d');rect(w.x+(r%2?-7:1),w.y-15+r*10,1,10,'#6e533d');}}});rect(225,577,30,30,'#c4b27c');text('★',240,600,'#344a35',25);g.enemies.forEach(e=>drawTank(e,'#c88b70'));if(g.inv<=0||Math.floor(g.inv*10)%2===0)drawTank(g.player,'#c9d893');g.bullets.forEach(b=>rect(b.x-2,b.y-3,5,7,b.enemy?'#f0b18d':'#e9f5ac'));};
     board();return g;
   }
-  const constructors={breakout:Breakout,snake:Snake,racer:Racer,tanks:Tanks,...window.ArcadeExtras({ctx,W,H,keys,clamp,random,pick,overlap,addScore,finish,message,beep,spark,rect,text,background})};
+  let heroChoice=read('arcade-warriors-hero','guan');if(!['guan','zhao','zhang'].includes(heroChoice))heroChoice='guan';
+  const constructors={breakout:Breakout,snake:Snake,racer:Racer,tanks:Tanks,warriors:window.ArcadeWarriors({ctx,W,H,keys,clamp,random,addScore,finish,message,beep,spark,rect,text,getHero:()=>heroChoice}),...window.ArcadeExtras({ctx,W,H,keys,clamp,random,pick,overlap,addScore,finish,message,beep,spark,rect,text,background})};
   document.title=`${config.title} · 口袋街机厅`;
   $('game-title').textContent=config.title;$('header-game').textContent=config.label;$('game-label').textContent=config.label;$('game-description').textContent=config.description;
-  $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;document.body.dataset.game=id;$('drag-strip').hidden=id!=='breakout';if(id==='commando'){$('fire-button').innerHTML='跳跃<br><small>JUMP</small>';$('fire-button').setAttribute('aria-label','跳跃');}if(id==='snake'){$('fire-button').innerHTML='加速<br><small>按住</small>';$('fire-button').setAttribute('aria-label','按住加速');}
+  $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;document.body.dataset.game=id;$('drag-strip').hidden=id!=='breakout';if(id==='commando'||id==='warriors'){$('fire-button').innerHTML='跳跃<br><small>JUMP</small>';$('fire-button').setAttribute('aria-label','跳跃');}if(id==='snake'){$('fire-button').innerHTML='加速<br><small>按住</small>';$('fire-button').setAttribute('aria-label','按住加速');}
+  $('warrior-select').value=heroChoice;$('warrior-choice').hidden=id!=='warriors';$('warrior-skill').hidden=id!=='warriors';
+  $('warrior-select').addEventListener('change',()=>{if(id!=='warriors'||mode==='playing'||mode==='paused')return;const value=$('warrior-select').value;if(!['guan','zhao','zhang'].includes(value))return;heroChoice=value;save('arcade-warriors-hero',value);game=constructors.warriors();hud();});
+  $('warrior-skill').addEventListener('click',()=>{action('skill');hud();});
   $('hop-controls').hidden=id!=='hop';$('puzzle-tools').hidden=id!=='match';$('hint-button').addEventListener('click',()=>{action('hint');hud();});$('shuffle-button').addEventListener('click',()=>{action('shuffle');hud();});
   canvas.setAttribute('aria-label',`${config.title}游戏画面。${config.controls}`);
   document.querySelector(`.side-games a[href^="play.html?game=${id}"]`)?.classList.add('current');
-  const mapping={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',' ':'fire'};
-  window.addEventListener('keydown',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;if(mapping[key]||['p','m','Escape'].includes(key))e.preventDefault();if(e.repeat)return;
+  const mapping={...(id==='warriors'?{j:'attack',k:'skill'}:{}),ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',' ':'fire'};
+  window.addEventListener('keydown',e=>{if(e.target instanceof HTMLElement&&e.target.closest('select,input,textarea'))return;const key=e.key.length===1?e.key.toLowerCase():e.key;if(mapping[key]||['p','m','Escape'].includes(key))e.preventDefault();if(e.repeat)return;
     if(key==='Enter'&&e.target instanceof HTMLElement&&e.target.closest('button,a'))return;
     if(key==='p'||key==='Escape')pause();else if(key==='m')toggleAudio();else if(key==='Enter'){if(mode==='paused')pause();else if(mode==='ready'||mode==='over')start();}
     else if(mapping[key]&&mode==='playing'){keys.add(mapping[key]);action(mapping[key]);}});

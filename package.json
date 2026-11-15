@@ -1,10 +1,10 @@
 {
   "name": "game-thunderbolt",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "private": true,
-  "description": "Nine original mobile-friendly arcade games with a game selection lobby",
+  "description": "Ten original mobile-friendly arcade games with a game selection lobby",
   "scripts": {
-    "check": "node --check game.js && node --check minigames.js && node --check lobby.js && node --check mobile.js && node --check extra-games.js",
+    "check": "node --check game.js && node --check minigames.js && node --check lobby.js && node --check mobile.js && node --check extra-games.js && node --check warriors.js",
     "test": "node --test tests/*.test.cjs"
   }
 }

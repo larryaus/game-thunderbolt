@@ -13,10 +13,11 @@ function engine(id,blocked=false){
     document:{body:{dataset:{}},getElementById:element,querySelector:()=>null,querySelectorAll:()=>buttons,addEventListener(n,f){events[n]=f;}},
     window:{addEventListener(n,f){events[n]=f;}},localStorage:{getItem(k){if(blocked)throw Error('denied');return storage.get(k)??null;},setItem(k,v){if(blocked)throw Error('denied');storage.set(k,v);}}};
   const source=fs.readFileSync(path.join(__dirname,'../minigames.js'),'utf8').replace(/\}\)\(\);\s*$/,`globalThis.api={start,pause,update,draw,action,finish,keys,constructors,addScore,mode:()=>mode,game:()=>game,score:()=>score};})();`);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../warriors.js'),'utf8'),sandbox);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extra-games.js'),'utf8'),sandbox);
   vm.runInNewContext(source,sandbox);return{...sandbox.api,element,events,storage};
 }
-for(const id of ['breakout','snake','racer','tanks','moles','match','commando','hop']){
+for(const id of ['breakout','snake','racer','tanks','moles','match','commando','hop','warriors']){
   test(`${id}: ready, start, pause, record and fresh restart`,()=>{
     const e=engine(id);assert.equal(e.mode(),'ready');e.start();e.draw();const g=e.game();e.pause();assert.equal(e.mode(),'paused');e.update(.5);assert.equal(e.game(),g);e.pause();assert.equal(e.mode(),'playing');
     e.addScore(777);e.finish('test');assert.equal(e.mode(),'over');assert.equal(e.storage.get('arcade-best-'+id),'777');e.start();assert.equal(e.score(),0);assert.equal(e.game().level,1);e.events.blur();assert.equal(e.mode(),'paused');
@@ -192,4 +193,57 @@ test('hop: near-edge landing scores one and breaks a center combo; extended play
 test('hop: keyboard space and phone button both support press-and-release controls',()=>{
   const e=engine('hop');e.start();const g=e.game();e.events.keydown({key:' ',repeat:false,preventDefault(){}});e.update(.5);assert.equal(g.phase,'charging');e.events.keyup({key:' '});assert.equal(g.phase,'flying');
   e.start();const button=e.element('hop-charge');button.listeners.pointerdown({pointerId:4,preventDefault(){}});e.update(.5);button.listeners.pointerup({pointerId:4});assert.equal(e.game().phase,'flying');
+});
+
+function warriorEnemy(x,y,type='soldier',hp=50){return{x,y,z:0,hp,maxHp:hp,type,face:-1,cooldown:10,wind:0,stun:0,swing:0,dead:false,attacks:0};}
+test('warriors: hero choice persists, changes combat stats, and cannot change during a run',()=>{
+  const e=engine('warriors'),select=e.element('warrior-select');select.value='zhao';select.listeners.change();assert.equal(e.game().hero.name,'赵云');assert.equal(e.storage.get('arcade-warriors-hero'),'zhao');e.draw();
+  select.value='zhang';select.listeners.change();assert.equal(e.game().hero.name,'张飞');assert.equal(e.game().maxHp,120);e.start();select.value='guan';select.listeners.change();assert.equal(e.game().hero.name,'张飞');
+});
+test('warriors: proximity auto-attacks and third-hit combo deals extra damage',()=>{
+  const e=engine('warriors');e.start();const g=e.game(),foe=warriorEnemy(150,440);g.enemies=[foe];e.update(1/60);assert.equal(g.combo,1);assert.equal(foe.hp,45);
+  g.player.cooldown=0;g.action('attack');assert.equal(g.combo,2);g.player.cooldown=0;g.action('attack');assert.equal(g.combo,3);assert.equal(foe.hp,31.5);e.draw();
+});
+test('warriors: jump avoids ground attacks, invulnerability prevents duplicate hits, and lives expire',()=>{
+  const e=engine('warriors');e.start();const g=e.game(),foe=warriorEnemy(120,440);g.enemies=[foe];g.player.cooldown=100;g.player.inv=0;foe.wind=.01;e.update(.02);assert.equal(g.hp,93);
+  foe.wind=.01;e.update(.02);assert.equal(g.hp,93);g.player.inv=0;g.action('fire');foe.wind=.01;e.update(.1);assert.ok(g.player.z>25);assert.equal(g.hp,93);
+  for(let i=0;i<3;i++){g.player.z=0;g.player.vz=0;g.player.inv=0;g.hp=1;foe.wind=.01;foe.stun=0;e.update(.02);if(i<2)assert.equal(g.hp,g.maxHp);}
+  assert.equal(g.lives,0);assert.equal(e.mode(),'over');
+});
+test('warriors: skill spends rage, damages nearby foes, interrupts boss windup and obeys range',()=>{
+  const e=engine('warriors');e.start();const g=e.game(),boss=warriorEnemy(210,440,'boss',170),far=warriorEnemy(500,440);boss.wind=.6;g.enemies=[boss,far];e.element('warrior-skill').listeners.click();assert.equal(g.rage,0);assert.equal(boss.hp,132);assert.equal(boss.wind,0);assert.equal(far.hp,50);assert.ok(g.player.inv>0);
+  g.action('skill');assert.equal(boss.hp,132);e.draw();
+});
+test('warriors: ordinary hits do not cancel boss windup; food and gold are collectible',()=>{
+  const e=engine('warriors');e.start();const g=e.game(),boss=warriorEnemy(150,440,'boss',170);boss.wind=.6;g.enemies=[boss];g.action('attack');assert.equal(boss.wind,.6);
+  g.hp=40;g.pickups=[{x:g.player.x,y:g.player.y,type:'food'},{x:g.player.x,y:g.player.y,type:'gold'}];e.update(1/60);assert.equal(g.hp,65);assert.equal(e.score(),300);assert.equal(g.pickups.length,0);
+});
+test('warriors: phone movement is clamped to the current encounter and jump can be pressed simultaneously',()=>{
+  const e=engine('warriors');e.start();const g=e.game();g.active=true;g.enemies=[warriorEnemy(450,440,'boss',1e6)];g.player.cooldown=1000;g.player.inv=1000;
+  const right=e.element('button-right'),jump=e.element('button-fire');right.listeners.pointerdown({pointerId:1,preventDefault(){}});jump.listeners.pointerdown({pointerId:2,preventDefault(){}});e.update(.1);assert.ok(g.player.x>90);assert.ok(g.player.z>0);jump.listeners.pointerup({pointerId:2});
+  for(let i=0;i<400;i++)e.update(1/60);assert.equal(g.player.x,560);right.listeners.pointercancel({pointerId:1});assert.equal(e.keys.size,0);
+});
+test('warriors: clearing all three encounters in all three scenes wins and records the run',()=>{
+  const e=engine('warriors');e.start();const g=e.game();
+  for(let stage=1;stage<=3;stage++){assert.equal(g.level,stage);for(let wave=0;wave<3;wave++){g.player.inv=1000;g.player.x=[370,880,1390][wave]-179;g.player.y=440;e.update(1/60);assert.equal(g.active,true);assert.ok(g.enemies.length>=4);assert.equal(g.wave,wave);
+      for(const foe of g.enemies){foe.x=g.player.x+50;foe.y=440;foe.hp=1;}g.rage=100;g.action('skill');e.update(1/60);if(stage===3&&wave===2)assert.equal(e.mode(),'over');
+    }if(stage<3){assert.ok(g.transition>0);for(let i=0;i<163;i++)e.update(1/60);}
+  }assert.ok(e.score()>10000);assert.equal(e.storage.get('arcade-best-warriors'),String(e.score()));
+});
+
+test('warriors: shortest-range hero can still hit bosses knocked to the arena boundary',()=>{
+  const e=engine('warriors');e.element('warrior-select').value='zhang';e.element('warrior-select').listeners.change();e.start();const g=e.game();g.wave=2;g.active=true;g.player.x=1580;g.player.y=440;g.player.inv=1000;g.enemies=[warriorEnemy(1600,440,'boss',200)];g.rage=100;g.action('skill');assert.ok(g.enemies[0].x<=1570);g.player.cooldown=0;const before=g.enemies[0].hp;g.action('attack');assert.ok(g.enemies[0].hp<before);
+});
+
+test('warriors: a full run can be won through movement, attacks and jumps without changing combat state',()=>{
+  const e=engine('warriors');e.start();const g=e.game();
+  for(let frame=0;frame<24000&&e.mode()==='playing';frame++){
+    e.keys.clear();if(g.transition<=0){const p=g.player,target=g.enemies.filter(t=>!t.dead).sort((a,b)=>(Math.abs(a.x-p.x)+Math.abs(a.y-p.y)*2)-(Math.abs(b.x-p.x)+Math.abs(b.y-p.y)*2))[0];
+      if(!target)e.keys.add('right');else{const dx=target.x-p.x,dy=target.y-p.y;if(Math.abs(dx)>g.hero.range*.53)e.keys.add(dx>0?'right':'left');if(Math.abs(dy)>7)e.keys.add(dy>0?'down':'up');
+        if(g.enemies.some(t=>t.wind>0&&t.wind<.35&&Math.abs(t.x-p.x)<175&&Math.abs(t.y-p.y)<90))g.action('fire');
+        if(g.rage>=100&&Math.abs(dx)<225&&Math.abs(dy)<95)g.action('skill');
+      }
+    }e.update(1/60);
+  }
+  assert.equal(e.mode(),'over');assert.equal(g.level,3);assert.ok(g.lives>0);assert.ok(e.element('mini-overlay-text').textContent.includes('三关突破'));
 });
