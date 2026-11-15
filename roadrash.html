@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111a17">
+<meta name="description" content="暴力摩托 Road Rash，1991 世嘉 MD 原版。原版像素公路、摩托竞速与打斗，支持手机转向、加速、刹车、出拳、踢人与油门锁定。">
+<title>暴力摩托 · 世嘉 MD 原版</title>
+<link rel="stylesheet" href="wof.css?v=original1"><link rel="stylesheet" href="roadrash.css?v=md1">
+<script src="mobile.js?v=phone2" defer></script><script src="wof-controls.js?v=original1" defer></script><script src="roadrash-controls.js?v=md1" defer></script><script src="roadrash.js?v=md1" defer></script>
+</head>
+<body class="roadrash">
+<header class="wof-header"><a class="back" href="./" aria-label="返回游戏大厅">← 大厅</a><div class="game-name"><strong>暴力摩托</strong><span>ROAD RASH · 1991 MEGA DRIVE 原版</span></div><button id="sound" aria-pressed="false">声音关</button><button id="fullscreen" aria-label="切换全屏">全屏</button></header>
+<main id="cabinet">
+<section id="display" aria-label="世嘉 MD 原版游戏画面"><div id="game"></div>
+<div id="boot-cover" class="cover"><img src="assets/roadrash-original.png" alt="暴力摩托 MD 原版雪山公路竞速画面"><div><span>ELECTRONIC ARTS · SEGA MEGA DRIVE</span><h1>暴力摩托</h1><p>1991 原版 · 像素公路 · 竞速与打斗</p><button id="boot" class="primary">加载原版游戏 ↗</button><small>首次约 3 MB · 手机建议横屏<br>标题画面按开始，选赛道后再按两次开始出发。</small></div></div>
+<div id="pause-cover" class="pause-cover" hidden><h2>已暂停</h2><button id="resume" class="primary">继续游戏 ▶</button></div></section>
+<div class="status-line"><span id="status" role="status" aria-live="polite">标题画面按开始 → 左右选赛道 → 再按两次开始</span><button id="pause" disabled aria-label="暂停游戏">Ⅱ</button></div>
+<section class="controls" aria-label="手机摩托操作">
+<div id="stick" class="stick" role="group" aria-label="方向摇杆：左右转向，上下浏览菜单，支持滑动换向"><span class="up">↑</span><span class="left">←</span><span class="right">→</span><span class="down">↓</span><div id="knob" class="knob"></div></div>
+<div class="center-controls"><button id="start" disabled>开始<small>START</small></button><button id="cruise" disabled aria-pressed="false">油门锁定<small id="cruise-state">关 · 比赛中开启</small></button></div>
+<div class="actions"><button id="throttle" class="gas" data-action="throttle" disabled>加速<small>按住 · B</small></button><button id="brake" class="brake" data-action="brake" disabled>刹车<small>按住 · A</small></button><button id="attack" class="punch" data-action="attack" disabled>出拳<small>C / 武器</small></button><button id="kick" class="kick" data-action="kick" disabled>踢人<small>按住蓄势 / 松手踢</small></button></div>
+</section>
+<div class="bottom-line"><span>左右转向 · 靠近对手再攻击 · 油门锁定后可专心转向与打斗</span><button id="restart" disabled>重新启动</button></div>
+</main>
+<footer><p>键盘：WASD / 方向键，J 加速，K 刹车，L 出拳，空格踢人，Enter 开始，P 暂停。<br>保留原版赛道、商店、升级与密码续关；暂停或切后台会释放油门。</p><p>原版游戏 © 1991 Electronic Arts · <a href="https://github.com/EmulatorJS/EmulatorJS/tree/v4.2.3" target="_blank" rel="noopener">EmulatorJS 4.2.3</a> / Genesis Plus GX · <a href="SOURCES.md">资源来源</a></p></footer>
+</body></html>

@@ -1,4 +1,4 @@
-# 原版街机游戏：来源与部署
+# 原版游戏：来源与部署
 
 ## 游戏
 
@@ -45,3 +45,21 @@
 - 已使用 FBNeo 原生内核运行同一完整 ZIP，完成投币、开始并进入第一关；实际验证移动、射击、跳跃，以及投掷手雷后数量减少。`assets/mslug-original.png` 为该运行过程捕获的游戏画面。
 - 这不替代浏览器 WebAssembly 和手机真机手感验证。
 - 旧 `play.html?game=commando` 地址自动转到 `mslug.html`；大厅不再使用旧自制横版引擎作为合金弹头入口。
+
+
+## 暴力摩托（Road Rash / 世嘉 MD）
+
+- 版本：Electronic Arts 的 Road Rash 初代（1991），Sega Mega Drive / Genesis，USA / Europe 原版。
+- 公开资源页面：https://archive.org/details/no-intro-sega-mega-drive-genesis-roms
+- 下载归档：https://archive.org/download/no-intro-sega-mega-drive-genesis-roms/No-Intro%20-%20Sega%20-%20Mega%20Drive%20-%20Genesis/Road%20Rash%20%28USA%2C%20Europe%29.rar
+- 使用归档中的 `Road Rash (USA, Europe).md`，原样保存为 `roms/roadrash.md`，786,432 字节，未打补丁或修改游戏内容。
+- ROM CRC32：`DEA53D19`；SHA-1：`8ff2b2a58b09c42eeb95f633bd8ea5227ac71358`。与 libretro 数据库的 No-Intro 记录一致：https://github.com/libretro/libretro-database/blob/master/metadat/no-intro/Sega%20-%20Mega%20Drive%20-%20Genesis.dat
+- SHA-256：`f7e95580baf30184d4d18a44042ea7a353308a8ed301d8421aed42f7b0f89663`。
+- 原版游戏版权属于 Electronic Arts；不是本项目的原创赛车引擎。
+- WebAssembly 内核取自 `@emulatorjs/core-genesis_plus_gx@4.2.3`：https://www.npmjs.com/package/@emulatorjs/core-genesis_plus_gx/v/4.2.3
+- 独立部署的单线程 legacy 构建 `vendor/emulatorjs/cores/genesis_plus_gx-legacy-wasm.data`，1,204,803 字节，SHA-256：`2a1edeb68d7ec882149ed3cd5d3aa95a6ac231ebabaf82cdb56175a8b62967cc`；沿用 EmulatorJS 4.2.3 前端、解压器及中文翻译。无需 MD BIOS，无需跨域 iframe 或外部运行时游戏热链。
+- Genesis Plus GX 原样使用，许可证及各组件声明见 `vendor/emulatorjs/cores/licenses/genesis_plus_gx.txt`，原始来源：https://github.com/libretro/Genesis-Plus-GX/blob/master/LICENSE.txt 。内核禁止商业使用，保留上游声明。
+- 原版说明书：https://segaretro.org/images/9/99/Road_Rash_MD_US_Manual.pdf 。标题画面按 START 进入选赛道，左右选择，再按两次 START 出发。A 刹车、B 加速、C 攻击；下 + C 蓄势，松开 C 踢人。对应 libretro joypad：A=1、B=0、C=8、START=3，方向=4/5/6/7。
+- `roadrash.html` / `roadrash.js` 是独立 MD 播放器，复用输入源管理与八方向摇杆；`roadrash-controls.js` 提供 MD 按键映射与刹车优先。按住加速持续发送 B，可选择锁定油门；同时转向与攻击不会互相释放。踢人与攻击均按原版按下 / 松开时机触发，不使用街机连发。暂停、切后台、旋转屏幕、离开页面会释放所有按键并解除油门锁定。
+- 使用 Genesis Plus GX 原生内核加载同一 No-Intro ROM，完成标题、选赛道、赛前对话和首场比赛，并对比加速、刹车、转向、出拳与踢人的实际游戏帧。`assets/roadrash-original.png` 为实际运行捕获的画面。
+- 自动测试覆盖原版 ROM / 内核哈希、多点触控、刹车优先、油门锁定、开始、暂停、后台释放与加载失败重试。此验证不能替代浏览器 WebAssembly 启动和手机真机手感检查。
