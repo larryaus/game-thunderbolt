@@ -74,3 +74,16 @@ test('touch gestures use scaled coordinates, button release cancels held fire, s
   const s=engine('snake');s.start();const sc=s.element('mini-canvas');sc.listeners.pointerdown({pointerId:1,clientX:50,clientY:100,preventDefault(){}});sc.listeners.pointermove({pointerId:1,clientX:50,clientY:50});assert.equal(s.game().queue[0].y,-1);
 });
 test('unknown game identifiers use a playable default',()=>{const e=engine('__proto__');e.start();assert.ok(e.game().bricks.length>0);});
+
+test('tanks: two fingers can hold movement and fire; lifting fire keeps movement active',()=>{
+  const e=engine('tanks');e.start();const g=e.game();g.walls=[];g.spawn=100;
+  const up=e.element('button-up'),fire=e.element('button-fire');
+  up.listeners.pointerdown({pointerId:10,preventDefault(){}});
+  fire.listeners.pointerdown({pointerId:11,preventDefault(){}});
+  assert.ok(e.keys.has('up'));assert.ok(e.keys.has('fire'));
+  const y=g.player.y;for(let i=0;i<30;i++)e.update(1/60);
+  assert.ok(g.player.y<y-40);assert.ok(g.bullets.length>=2);
+  fire.listeners.pointerup({pointerId:11});assert.equal(e.keys.has('fire'),false);assert.equal(e.keys.has('up'),true);
+  const next=g.player.y;for(let i=0;i<10;i++)e.update(1/60);assert.ok(g.player.y<next);
+  up.listeners.pointercancel({pointerId:10});assert.equal(e.keys.size,0);const stopped=g.player.y;e.update(1/60);assert.equal(g.player.y,stopped);
+});
