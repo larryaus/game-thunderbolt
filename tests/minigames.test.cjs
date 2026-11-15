@@ -16,7 +16,7 @@ function engine(id,blocked=false){
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extra-games.js'),'utf8'),sandbox);
   vm.runInNewContext(source,sandbox);return{...sandbox.api,element,events,storage};
 }
-for(const id of ['breakout','snake','racer','tanks','moles','match','commando']){
+for(const id of ['breakout','snake','racer','tanks','moles','match','commando','hop']){
   test(`${id}: ready, start, pause, record and fresh restart`,()=>{
     const e=engine(id);assert.equal(e.mode(),'ready');e.start();e.draw();const g=e.game();e.pause();assert.equal(e.mode(),'paused');e.update(.5);assert.equal(e.game(),g);e.pause();assert.equal(e.mode(),'playing');
     e.addScore(777);e.finish('test');assert.equal(e.mode(),'over');assert.equal(e.storage.get('arcade-best-'+id),'777');e.start();assert.equal(e.score(),0);assert.equal(e.game().level,1);e.events.blur();assert.equal(e.mode(),'paused');
@@ -162,4 +162,34 @@ test('commando: destroying three mission bosses wins the run and preserves score
   const e=engine('commando');e.start();for(let stage=1;stage<=3;stage++){const g=e.game();assert.equal(g.level,stage);g.enemies=[];g.crates=[];g.cages=[];g.player.x=g.boss.x-160;g.boss.hp=1;g.bullets=[{x:g.boss.x,y:g.boss.y,w:12,h:5,vx:0,vy:0,enemy:false}];e.update(1/60);
     if(stage<3){assert.ok(g.transition>0);for(let i=0;i<151;i++)e.update(1/60);}else assert.equal(e.mode(),'over');
   }assert.equal(e.score(),12000);assert.equal(e.storage.get('arcade-best-commando'),'12000');
+});
+
+test('hop: holding charges, releasing flies and a centered landing starts a combo',()=>{
+  const e=engine('hop');e.start();const g=e.game();g.press('fire');assert.equal(g.phase,'charging');
+  const charge=(Math.hypot(g.next.x-g.player.x,g.next.y-g.player.y)-80)/220;e.update(charge);g.release('fire');assert.equal(g.phase,'flying');
+  for(let i=0;i<60;i++)e.update(1/60);assert.equal(g.jumps,1);assert.equal(g.combo,1);assert.equal(e.score(),2);assert.equal(g.phase,'idle');
+  const charge2=(Math.hypot(g.next.x-g.player.x,g.next.y-g.player.y)-80)/220;g.press('fire');e.update(charge2);g.release('fire');for(let i=0;i<60;i++)e.update(1/60);assert.equal(g.combo,2);assert.equal(e.score(),6);
+});
+test('hop: pause and cancelled touch discard charging without causing a jump',()=>{
+  const e=engine('hop');e.start();const button=e.element('hop-charge'),g=e.game();button.listeners.pointerdown({pointerId:2,preventDefault(){}});e.update(.4);assert.ok(g.charge>0);
+  button.listeners.pointercancel({pointerId:2});assert.equal(g.phase,'idle');button.listeners.pointerup({pointerId:2});assert.equal(g.phase,'idle');
+  button.listeners.pointerdown({pointerId:3,preventDefault(){}});e.update(.3);e.pause();assert.equal(g.phase,'idle');e.pause();button.listeners.pointerup({pointerId:3});assert.equal(g.phase,'idle');
+});
+test('hop: canvas release jumps once and unrelated fingers or keyboard keys cannot release the charge',()=>{
+  const e=engine('hop');e.start();const c=e.element('mini-canvas'),g=e.game();c.listeners.pointerdown({pointerId:1,clientX:90,clientY:200,preventDefault(){}});e.update(.5);
+  c.listeners.pointerdown({pointerId:2,clientX:120,clientY:210,preventDefault(){}});c.listeners.pointerup({pointerId:2});assert.equal(g.phase,'charging');
+  e.events.keyup({key:'m'});assert.equal(g.phase,'charging');c.listeners.pointerup({pointerId:1});assert.equal(g.phase,'flying');c.listeners.lostpointercapture({pointerId:1});assert.equal(g.phase,'flying');
+});
+test('hop: short and long misses end the run, restart resets charge and score',()=>{
+  for(const charge of [.01,1.4]){const e=engine('hop');e.start();const g=e.game();g.press('fire');e.update(charge);g.release('fire');for(let i=0;i<100;i++)e.update(1/60);assert.equal(e.mode(),'over');assert.equal(g.lives,0);e.start();assert.equal(e.game().phase,'idle');assert.equal(e.game().charge,0);assert.equal(e.score(),0);}
+});
+test('hop: near-edge landing scores one and breaks a center combo; extended play keeps platforms bounded',()=>{
+  const e=engine('hop');e.start();const g=e.game();g.combo=3;
+  let charge=(Math.hypot(g.next.x-g.player.x,g.next.y-g.player.y)-80+24)/220;g.press('fire');e.update(charge);g.release('fire');for(let i=0;i<60;i++)e.update(1/60);assert.equal(g.jumps,1);assert.equal(g.combo,0);assert.equal(e.score(),1);
+  for(let j=0;j<25;j++){charge=(Math.hypot(g.next.x-g.player.x,g.next.y-g.player.y)-80)/220;g.press('fire');e.update(charge);g.release('fire');for(let i=0;i<60;i++)e.update(1/60);e.draw();assert.equal(e.mode(),'playing');}
+  assert.equal(g.jumps,26);assert.ok(g.platforms.length<=7);assert.equal(g.level,6);
+});
+test('hop: keyboard space and phone button both support press-and-release controls',()=>{
+  const e=engine('hop');e.start();const g=e.game();e.events.keydown({key:' ',repeat:false,preventDefault(){}});e.update(.5);assert.equal(g.phase,'charging');e.events.keyup({key:' '});assert.equal(g.phase,'flying');
+  e.start();const button=e.element('hop-charge');button.listeners.pointerdown({pointerId:4,preventDefault(){}});e.update(.5);button.listeners.pointerup({pointerId:4});assert.equal(e.game().phase,'flying');
 });

@@ -134,3 +134,18 @@
   .touch-controls[data-game=commando] .fire-button{width:105px;height:52px;border-radius:10px;font-size:14px}
   .touch-controls[data-game=commando] .fire-button small{display:none}
 }
+.hop-art{background:#d8ddc6}.hop-art .art-label{color:#5d7257}.hop-art .art-tag{color:#43573d;border-color:#8c9e7755;background:#f0f1d780}
+.hop-controls{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-height:100px;padding:12px;background:#2c4035}
+.hop-controls button{display:flex;align-items:center;justify-content:center;gap:20px;width:100%;min-height:76px;border:2px solid #b6cf85;border-radius:14px;background:#d9ecaa;color:#2c4433;font-size:20px;font-weight:bold;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 4px 0 #718b52;cursor:pointer}
+.hop-controls button span{font-size:12px;font-weight:normal}
+.hop-controls button:active{background:#efffc9;box-shadow:inset 0 3px 8px #5a784033;transform:translateY(2px)}
+.touch-controls[data-game=hop]{display:none}
+@media(max-width:580px),(pointer:coarse) and (max-width:1100px){
+  .play-page[data-game=hop]{--control-height:108px}
+  .hop-controls{height:108px;padding:12px 10px 16px;min-height:108px}
+  .hop-controls button{min-height:80px;font-size:21px;gap:18px}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .hop-controls{grid-column:2;grid-row:2/4;height:auto;min-height:0;padding:8px}
+  .hop-controls button{height:120px;min-height:80px;flex-direction:column;gap:14px;font-size:21px}
+}

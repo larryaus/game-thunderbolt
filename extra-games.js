@@ -124,6 +124,50 @@
         text('合金突击 / 自动射击',240,28,'#edf0cf',13);text(`MISSION ${g.level}/3`,240,48,'#d5dec0',11);
       };build();return g;
     }
-    return {moles:Moles,match:Match,commando:Commando};
+    function Hop(){
+      const palette=[['#bad18c','#8da569','#708652'],['#b9abd4','#9283ae','#74688e'],['#e3bf83','#b79863','#927b51'],['#91b9ac','#6b9789','#537b6e']];
+      const g={level:1,lives:1,jumps:0,combo:0,phase:'idle',charge:0,owner:null,player:{x:0,y:0},current:null,next:null,platforms:[],camera:{x:0,y:0},flight:null,timer:0,height:0,over:false};
+      function platform(x,y,index){return{x,y,size:Math.max(66,94-Math.floor(index/5)*3),colors:palette[index%palette.length],index};}
+      function nextPlatform(){const distance=random(195,275)+Math.min(g.jumps,20)*1.6,dx=Math.random()<.5?1:0;g.next=platform(g.current.x+dx*distance,g.current.y+(1-dx)*distance,g.jumps+1);g.platforms.push(g.next);if(g.platforms.length>7)g.platforms.shift();}
+      function view(x,y){const dx=x-g.camera.x,dy=y-g.camera.y;return{x:W/2+(dx-dy)*.7,y:450-(dx+dy)*.34};}
+      function trajectory(){const dx=g.next.x-g.player.x,dy=g.next.y-g.player.y,distance=Math.hypot(dx,dy)||1,range=80+g.charge*220;return{x:g.player.x+dx/distance*range,y:g.player.y+dy/distance*range};}
+      function contains(p,at){return Math.abs(p.x-at.x)<=at.size/2-4&&Math.abs(p.y-at.y)<=at.size/2-4;}
+      g.press=(source='fire')=>{if(g.phase!=='idle'||g.over)return;g.phase='charging';g.charge=0;g.owner=source;};
+      g.cancel=source=>{if(g.phase==='charging'&&(!source||g.owner===source)){g.phase='idle';g.charge=0;g.owner=null;}};
+      g.release=(source='fire')=>{if(g.phase!=='charging'||g.owner!==source||g.over)return;const end=trajectory();g.flight={start:{...g.player},end,duration:.52+g.charge*.12,elapsed:0};g.phase='flying';g.owner=null;beep(340+g.charge*200,.1);};
+      g.action=n=>{if(n==='fire')g.press('fire');};
+      g.update=dt=>{
+        if(g.over)return;
+        const aim={x:(g.current.x+g.next.x)/2,y:(g.current.y+g.next.y)/2};g.camera.x+=(aim.x-g.camera.x)*Math.min(1,dt*6);g.camera.y+=(aim.y-g.camera.y)*Math.min(1,dt*6);
+        if(g.phase==='charging'){g.charge=Math.min(1.4,g.charge+dt);return;}
+        if(g.phase==='flying'){
+          const f=g.flight;f.elapsed+=dt;const t=clamp(f.elapsed/f.duration,0,1);g.player.x=f.start.x+(f.end.x-f.start.x)*t;g.player.y=f.start.y+(f.end.y-f.start.y)*t;g.height=Math.sin(Math.PI*t)*(100+g.charge*40);
+          if(t<1)return;g.height=0;
+          if(contains(g.player,g.next)){
+            const centered=Math.hypot(g.player.x-g.next.x,g.player.y-g.next.y)<=13;g.combo=centered?g.combo+1:0;const points=centered?g.combo*2:1;addScore(points);g.jumps++;g.level=1+Math.floor(g.jumps/5);g.current=g.next;nextPlatform();g.phase='settling';g.timer=.2;g.charge=0;
+            const p=view(g.player.x,g.player.y);spark(p.x,p.y,'#a9bd75',centered?18:7);message(centered?`正中中心 · +${points}`:'+1',.9);beep(centered?880:530,.12);
+          }else if(contains(g.player,g.current)){g.phase='settling';g.timer=.18;g.charge=0;message('还在原地，再蓄久一点',1);}
+          else{g.phase='falling';g.timer=.6;g.combo=0;beep(150,.2);}
+        }else if(g.phase==='settling'){g.timer-=dt;if(g.timer<=0)g.phase='idle';}
+        else if(g.phase==='falling'){g.timer-=dt;g.height-=dt*240;if(g.timer<=0){g.over=true;g.lives=0;finish(`落空了！本次成功跳过 ${g.jumps} 个平台。`);}}
+      };
+      g.lifeLabel=()=>`连中 ×${g.combo}`;g.status=()=>g.phase==='charging'?`蓄力 ${Math.round(g.charge/1.4*100)}%`:`跳过 ${g.jumps} 个`;
+      function polygon(points,color){ctx.fillStyle=color;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fill();}
+      function drawPlatform(p){const s=p.size/2,points=[view(p.x-s,p.y-s),view(p.x+s,p.y-s),view(p.x+s,p.y+s),view(p.x-s,p.y+s)],depth=23;
+        const bottom=points.map(q=>({x:q.x,y:q.y+depth}));polygon([points[0],points[1],bottom[1],bottom[0]],p.colors[1]);polygon([points[0],points[3],bottom[3],bottom[0]],p.colors[2]);polygon(points,p.colors[0]);const c=view(p.x,p.y);
+        ctx.strokeStyle='#ffffff55';ctx.lineWidth=1;ctx.beginPath();points.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.stroke();circle(c.x,c.y,6,'#eff0d2');circle(c.x,c.y,2,'#7c8e66');
+      }
+      g.draw=()=>{
+        rect(0,0,W,H,'#e9e6d8');for(let i=0;i<14;i++){const x=(i*131+g.camera.x*.08)%W,y=(i*79+g.camera.y*.04)%H;circle(x,y,2,'#d5d7c5');}
+        text('按住蓄力 · 松手起跳',240,40,'#61734e',17);text('轻按短跳，长按远跳，中心连击加分',240,67,'#8b927b',11);
+        [...g.platforms].sort((a,b)=>(b.x+b.y)-(a.x+a.y)).forEach(drawPlatform);
+        if(g.phase==='charging'){const landing=trajectory(),p=view(landing.x,landing.y);ctx.strokeStyle='#8e9f6a';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(p.x,p.y,12,6,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+        const p=view(g.player.x,g.player.y);ctx.fillStyle='#46563822';ctx.beginPath();ctx.ellipse(p.x,p.y+3,13,6,0,0,Math.PI*2);ctx.fill();
+        const squash=g.phase==='charging'?1-g.charge*.17:1,bounce=g.phase==='settling'?Math.sin(g.timer/.2*Math.PI)*.13:0;ctx.save();ctx.translate(p.x,p.y-g.height);ctx.scale(1+(1-squash)*.25,squash-bounce);rect(-9,-33,18,31,'#304d40');circle(0,-42,12,'#304d40');circle(4,-45,3,'#b5cf8e');rect(-10,-28,20,5,'#a9bc7e');ctx.restore();
+        rect(90,577,300,10,'#d1d7bf');rect(90,577,300*g.charge/1.4,10,'#8dA565');text(g.phase==='charging'?'看落点影子，松手起跳':'按住下方大按钮，或按住战场任意位置',240,610,'#7a8769',11);
+      };
+      g.current=platform(0,0,0);g.platforms.push(g.current);nextPlatform();g.camera.x=(g.current.x+g.next.x)/2;g.camera.y=(g.current.y+g.next.y)/2;return g;
+    }
+    return {moles:Moles,match:Match,commando:Commando,hop:Hop};
   };
 })();

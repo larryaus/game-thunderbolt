@@ -12,14 +12,15 @@
     tanks:{title:'坦克保卫战',label:'05 / BATTLE GUARD',description:'一辆坦克，一座不能失守的基地。',controls:'方向键 / WASD 移动与瞄准\n自动开火，无需按射击键\n手机：按住方向，滑动换向',tip:'砖墙可以击碎，钢墙会挡住炮弹。你的炮弹不会伤害基地；敌弹命中基地则立即结束，优先拦截下方敌军。',touch:'自动开火已开启\n按住方向，滑动换向',hint:'按住方向移动，滑动换向，自动开火。\n消灭敌军，守住 ★ 基地。'},
     moles:{title:'打地鼠',label:'06 / WHACK A MOLE',description:'眼疾手快，快乐就藏在下一只地鼠里。',controls:'手机：直接点击冒出的地鼠\n电脑：鼠标点击\n避开黑色炸弹，连续击中可加分',tip:'每局 60 秒。地鼠漏掉只会断连击；误点三次炸弹才会提前结束。不要点黑色带引线的炸弹。',touch:'直接点击地鼠',hint:'直接点击地鼠，连击得高分。\n60 秒挑战，小心黑色炸弹！'},
     match:{title:'连连看',label:'07 / CONNECT PAIRS',description:'找出相同图案，把快乐连成一线。',controls:'点击两张相同图案\n连线最多拐两个弯，可走外圈\n下方按钮提供提示和重排',tip:'连线不能穿过其他图案。配对成功加 2 秒，错误配对扣 3 秒；无可连接组合时自动免费重排。',touch:'点相同图案配对',hint:'点击两张相同图案，最多拐两次。\n可走外圈，下方有提示和重排。'},
-    commando:{title:'合金弹头风格',label:'08 / METAL COMMANDO',description:'横穿战区，救出战友，突破钢铁防线。',controls:'按住左右按钮移动，自动射击\n点跳跃按钮 / 空格 / ↑ 跳跃\n键盘 A D / 左右键也可移动',tip:'朝移动方向自动开火，击碎木箱和囚笼。救援会恢复生命，受伤后短暂无敌。连续突破三大战区的装甲 Boss。',touch:'自动射击已开启\n左手移动，右手跳跃',hint:'左手按左右移动，右手点跳跃。\n自动射击，救援战友，击败 Boss。'}
+    commando:{title:'合金弹头风格',label:'08 / METAL COMMANDO',description:'横穿战区，救出战友，突破钢铁防线。',controls:'按住左右按钮移动，自动射击\n点跳跃按钮 / 空格 / ↑ 跳跃\n键盘 A D / 左右键也可移动',tip:'朝移动方向自动开火，击碎木箱和囚笼。救援会恢复生命，受伤后短暂无敌。连续突破三大战区的装甲 Boss。',touch:'自动射击已开启\n左手移动，右手跳跃',hint:'左手按左右移动，右手点跳跃。\n自动射击，救援战友，击败 Boss。'},
+    hop:{title:'跳一跳',label:'09 / HOP & GO',description:'按住一点期待，跳向下一份快乐。',controls:'手机：按住下方大按钮，松手跳跃\n也可按住战场任意位置\n电脑：按住空格，松开起跳',tip:'长按跳得远，轻按跳得近。蓄力时的虚线影子提示落点，落在平台中心会连续加分。落回原平台可以重试，落空则结束。',touch:'按住蓄力，松手起跳',hint:'按住蓄力，松手跳向下一个平台。\n落在中心可获得连续加分。'}
   };
   const requested = new URLSearchParams(location.search).get('game');
   const id = Object.hasOwn(configs,requested) ? requested : 'breakout', config = configs[id];
   const canvas = $('mini-canvas'), ctx = canvas.getContext('2d');
   const keys = new Set(), pointers = new Map();
   let mode='ready', score=0, best=0, game, clock=0, noticeTime=0, audio, audioEnabled=false, last=0, accumulator=0;
-  let particles=[], swipe=null, stripPointer=null;
+  let particles=[], swipe=null, stripPointer=null, hopPointer=null;
   function read(k,f){try{return localStorage.getItem(k)??f;}catch{return f;}}
   function save(k,v){try{localStorage.setItem(k,String(v));}catch{}}
   best=Math.max(0,Number(read(`arcade-best-${id}`,0))||0); audioEnabled=read('arcade-sound','off')==='on';
@@ -33,7 +34,7 @@
   function finish(reason){if(mode!=='playing')return;mode='over';record();clearInput();noticeTime=0;$('mini-message').textContent='';$('mini-kicker').textContent=score>=best&&score>0?'NEW HIGH SCORE. NICELY PLAYED!':'ONE MORE ROUND?';showOverlay('本局结束',`${reason}\n得分 ${String(score).padStart(6,'0')} · 第 ${game.level} 关`,'再来一局 ↗');beep(130,.3);hud();}
   function showOverlay(title,text,button){$('mini-overlay-title').textContent=title;$('mini-overlay-text').textContent=text;$('mini-start').textContent=button;$('mini-overlay').hidden=false;}
   function start(){audioUnlock();clearInput();mode='playing';score=0;clock=0;particles=[];noticeTime=0;$('mini-message').textContent='';game=constructors[id]();$('mini-overlay').hidden=true;message('LET’S PLAY',1);hud();}
-  function clearInput(){keys.clear();pointers.clear();swipe=null;stripPointer=null;document.querySelectorAll('[data-control]').forEach(b=>b.setAttribute('aria-pressed','false'));}
+  function clearInput(){game?.cancel?.();hopPointer=null;keys.clear();pointers.clear();swipe=null;stripPointer=null;document.querySelectorAll('[data-control]').forEach(b=>b.setAttribute('aria-pressed','false'));}
   function pause(){if(mode==='playing'){mode='paused';clearInput();showOverlay('稍作休整','深呼吸，下一局操作更从容。','继续游戏 ↗');}else if(mode==='paused'){mode='playing';$('mini-overlay').hidden=true;audioUnlock();}hud();}
   function hud(){
     $('mini-score').textContent=String(score).padStart(6,'0');$('mini-best').textContent=String(Math.max(best,score)).padStart(6,'0');
@@ -157,7 +158,7 @@
   document.title=`${config.title} · 口袋街机厅`;
   $('game-title').textContent=config.title;$('header-game').textContent=config.label;$('game-label').textContent=config.label;$('game-description').textContent=config.description;
   $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;document.body.dataset.game=id;$('drag-strip').hidden=id!=='breakout';if(id==='commando'){$('fire-button').innerHTML='跳跃<br><small>JUMP</small>';$('fire-button').setAttribute('aria-label','跳跃');}if(id==='snake'){$('fire-button').innerHTML='加速<br><small>按住</small>';$('fire-button').setAttribute('aria-label','按住加速');}
-  $('puzzle-tools').hidden=id!=='match';$('hint-button').addEventListener('click',()=>{action('hint');hud();});$('shuffle-button').addEventListener('click',()=>{action('shuffle');hud();});
+  $('hop-controls').hidden=id!=='hop';$('puzzle-tools').hidden=id!=='match';$('hint-button').addEventListener('click',()=>{action('hint');hud();});$('shuffle-button').addEventListener('click',()=>{action('shuffle');hud();});
   canvas.setAttribute('aria-label',`${config.title}游戏画面。${config.controls}`);
   document.querySelector(`.side-games a[href^="play.html?game=${id}"]`)?.classList.add('current');
   const mapping={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',' ':'fire'};
@@ -165,7 +166,7 @@
     if(key==='Enter'&&e.target instanceof HTMLElement&&e.target.closest('button,a'))return;
     if(key==='p'||key==='Escape')pause();else if(key==='m')toggleAudio();else if(key==='Enter'){if(mode==='paused')pause();else if(mode==='ready'||mode==='over')start();}
     else if(mapping[key]&&mode==='playing'){keys.add(mapping[key]);action(mapping[key]);}});
-  window.addEventListener('keyup',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;keys.delete(mapping[key]);});
+  window.addEventListener('keyup',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;keys.delete(mapping[key]);if(mode==='playing'&&mapping[key])game.release?.(mapping[key]);});
   const controlButtons=[...document.querySelectorAll('[data-control]')];
   function setControl(pointerId,name){
     const old=pointers.get(pointerId);pointers.delete(pointerId);
@@ -190,11 +191,17 @@
   strip.addEventListener('pointermove',e=>{if(mode==='playing'&&stripPointer===e.pointerId)stripMove(e);});
   const releaseStrip=e=>{if(e.pointerId===stripPointer)stripPointer=null;};
   strip.addEventListener('pointerup',releaseStrip);strip.addEventListener('pointercancel',releaseStrip);strip.addEventListener('lostpointercapture',releaseStrip);
+  const hopButton=$('hop-charge');
+  hopButton.addEventListener('pointerdown',e=>{if(mode!=='playing'||id!=='hop'||hopPointer!==null)return;e.preventDefault();audioUnlock();hopButton.setPointerCapture(e.pointerId);hopPointer=e.pointerId;game.press?.('button');});
+  hopButton.addEventListener('pointerup',e=>{if(e.pointerId!==hopPointer)return;hopPointer=null;if(mode==='playing')game.release?.('button');});
+  const cancelHopButton=e=>{if(e.pointerId===hopPointer){hopPointer=null;game.cancel?.('button');}};
+  hopButton.addEventListener('pointercancel',cancelHopButton);hopButton.addEventListener('lostpointercapture',cancelHopButton);
   function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H};}
-  canvas.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=pos(e);swipe={...p,id:e.pointerId};game.pointer?.(p.x,p.y);audioUnlock();game.tap?.(p.x,p.y);hud();});
+  canvas.addEventListener('pointerdown',e=>{if(mode!=='playing'||id==='hop'&&swipe)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=pos(e);swipe={...p,id:e.pointerId};game.pointer?.(p.x,p.y);audioUnlock();game.tap?.(p.x,p.y);if(id==='hop')game.press?.('canvas');hud();});
   canvas.addEventListener('pointermove',e=>{if(mode!=='playing')return;const p=pos(e);if(id==='breakout'&&(e.pointerType==='mouse'||swipe?.id===e.pointerId))game.pointer?.(p.x,p.y);if(!swipe||swipe.id!==e.pointerId)return;
     const dx=p.x-swipe.x,dy=p.y-swipe.y;if(Math.hypot(dx,dy)>24){if(id==='snake')action(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up');else if(id==='racer'&&Math.abs(dx)>24)action(dx>0?'right':'left');swipe={...p,id:e.pointerId};}});
-  const clearSwipe=()=>{swipe=null;};canvas.addEventListener('pointerup',clearSwipe);canvas.addEventListener('pointercancel',clearSwipe);canvas.addEventListener('lostpointercapture',clearSwipe);
+  canvas.addEventListener('pointerup',e=>{if(swipe?.id!==e.pointerId)return;swipe=null;if(mode==='playing'&&id==='hop')game.release?.('canvas');});
+  const clearSwipe=e=>{if(swipe?.id!==e.pointerId)return;swipe=null;if(id==='hop')game.cancel?.('canvas');};canvas.addEventListener('pointercancel',clearSwipe);canvas.addEventListener('lostpointercapture',clearSwipe);
   $('mini-start').addEventListener('click',()=>mode==='paused'?pause():start());$('mini-pause').addEventListener('click',pause);$('audio-toggle').addEventListener('click',toggleAudio);
   window.addEventListener('blur',()=>{if(mode==='playing')pause();clearInput();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause();});window.addEventListener('pagehide',record);window.addEventListener('orientationchange',()=>{if(mode==='playing')pause();});
   function update(dt){if(mode!=='playing')return;clock+=dt;game.update(dt);if(noticeTime>0){noticeTime-=dt;if(noticeTime<=0)$('mini-message').textContent='';}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});particles=particles.filter(p=>p.life>0);if(Math.floor(clock*10)!==Math.floor((clock-dt)*10))hud();}
