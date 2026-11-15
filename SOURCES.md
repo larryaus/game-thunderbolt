@@ -1,4 +1,4 @@
-# 原版街机三国志：来源与部署
+# 原版街机游戏：来源与部署
 
 ## 游戏
 
@@ -30,3 +30,18 @@
 游戏包的 ZIP CRC 已检查。使用 FBNeo 原生内核加载同一 ROM，实际完成投币、开始、选将、第一关骑马移动、攻击和跳跃，并捕获原版游戏帧。此检查验证游戏包和街机输入，不能替代完整浏览器 WebAssembly 启动与手机手感实测。
 
 旧 `play.html?game=warriors` 收藏地址会跳转到 `wof.html`。大厅不再把旧自制引擎当作原版入口。
+
+
+## 合金弹头1（Metal Slug / Neo Geo）
+
+- 原版游戏：1996 年 NAZCA / SNK 的 Metal Slug 初代。
+- 参考页面：https://www.mhhf.com/game/detail/509
+- 参考页面公开加载的游戏包：https://www.mhhf.com/files/game/19/mslug.zip
+- 原始 ZIP 大小：14,779,872 字节；SHA-256：`ef3ef3de26a6d79372d99b5d902a702cf247fb4f810d108264a630788c572370`。
+- 游戏包自身已包含所需 Neo Geo 系统 ROM，无需另行下载 BIOS。
+- 仓库以 `roms/mslug.part1.bin` 至 `mslug.part3.bin` 三段存储，由 `roms/mslug.json` 描述大小与 SHA-256；`rom-loader.js` 在浏览器中逐段校验、按序合并，再校验完整 ZIP。合并结果与参考页面的原始 ZIP 逐字节一致，未修改游戏内容。
+- 使用与三国志相同的本地 EmulatorJS 4.2.3 / FBNeo 单线程 legacy 内核；合并后的 Blob 名称保留 `mslug.zip`，供街机驱动识别。
+- 输入：射击为 joypad 0，跳跃为 8，手雷为 1。手雷是单独的 Neo Geo C 键，不使用三国志的 A+B 宏。保留原版生命、弹药、手雷数量、救援、武器与载具规则。
+- 已使用 FBNeo 原生内核运行同一完整 ZIP，完成投币、开始并进入第一关；实际验证移动、射击、跳跃，以及投掷手雷后数量减少。`assets/mslug-original.png` 为该运行过程捕获的游戏画面。
+- 这不替代浏览器 WebAssembly 和手机真机手感验证。
+- 旧 `play.html?game=commando` 地址自动转到 `mslug.html`；大厅不再使用旧自制横版引擎作为合金弹头入口。

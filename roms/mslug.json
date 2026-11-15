@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "name": "mslug.zip",
+  "size": 14779872,
+  "sha256": "ef3ef3de26a6d79372d99b5d902a702cf247fb4f810d108264a630788c572370",
+  "parts": [
+    {
+      "file": "mslug.part1.bin",
+      "size": 5242880,
+      "sha256": "e738e95941a392fd14489b164ecbc0a04d0723e9c9469aa0de7d933bdee91313"
+    },
+    {
+      "file": "mslug.part2.bin",
+      "size": 5242880,
+      "sha256": "c8b57a0a93a58564da087b06170778d1f67e8f8a965e503559cd782173581819"
+    },
+    {
+      "file": "mslug.part3.bin",
+      "size": 4294112,
+      "sha256": "d32dbfce8f9e64d0a8ae8e120d3aa484fefc38c54c5e52140e6d1027edd45d1e"
+    }
+  ]
+}
