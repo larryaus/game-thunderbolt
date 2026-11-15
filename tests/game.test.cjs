@@ -72,7 +72,20 @@ test('a complete 40-second wave schedule reaches a boss; rendering and extended 
 test('touch coordinates map to game space; focus loss pauses; blocked storage does not break game', () => {
   const {game:g,el,events}=engine(true);g.start();
   el('game').listeners.pointerdown({pointerId:1,clientX:100,clientY:300,preventDefault(){}});
+  const before={x:g.state().player.x,y:g.state().player.y};
+  g.update(1/60);assert.equal(g.state().player.x,before.x);assert.equal(g.state().player.y,before.y);
+  el('game').listeners.pointermove({pointerId:1,clientX:150,clientY:250});
   for(let i=0;i<60;i++)g.update(1/60);
-  assert.equal(g.state().player.x,100);assert.equal(g.state().player.y,270);
+  assert.equal(g.state().player.x,before.x+50);assert.equal(g.state().player.y,before.y-50);
   events.blur();assert.equal(g.state().mode,'paused');g.pause();g.setScore(999);g.gameOver();assert.equal(g.state().mode,'over');
+});
+
+test('phone Thunderbolt: finger lift stops movement; a second finger cannot hijack the plane; rotation pauses',()=>{
+  const {game:g,el,events}=engine();g.start();const c=el('game'),x=g.state().player.x;
+  c.listeners.pointerdown({pointerId:1,clientX:50,clientY:300,preventDefault(){}});
+  c.listeners.pointerdown({pointerId:2,clientX:400,clientY:10,preventDefault(){}});
+  c.listeners.pointermove({pointerId:2,clientX:450,clientY:50});g.update(1/60);assert.equal(g.state().player.x,x);
+  c.listeners.pointermove({pointerId:1,clientX:100,clientY:300});for(let i=0;i<10;i++)g.update(1/60);assert.equal(g.state().player.x,x+50);
+  c.listeners.pointercancel({pointerId:1});const stopped=g.state().player.x;c.listeners.pointermove({pointerId:1,clientX:300,clientY:300});g.update(1/60);assert.equal(g.state().player.x,stopped);
+  el('bomb').listeners.click();assert.equal(g.state().player.bombs,2);events.orientationchange();assert.equal(g.state().mode,'paused');
 });

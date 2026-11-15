@@ -23,3 +23,82 @@
   .mini-overlay p{font-size:10px;line-height:1.7;margin:0}
   .mini-overlay .primary-button{padding:12px 20px;margin:0;flex-shrink:0}
 }
+/* Phone-first input: controls never share a box with the battlefield. */
+.drag-strip{display:flex;align-items:center;justify-content:center;height:64px;margin:0 6px 6px;border:1px solid #809862;border-radius:9px;background:repeating-linear-gradient(90deg,#435939 0,#435939 14px,#4b6040 14px,#4b6040 15px);color:#e4f4bb;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:ew-resize;font-size:13px;letter-spacing:1px}
+.touch-controls[data-game=tanks] .fire-button{display:none}
+.touch-controls[data-game=tanks]>p{display:block}
+[data-control][aria-pressed=true]{background:#d7ed9e!important;color:#293f2d!important;box-shadow:inset 0 2px 5px #273d3055}
+@media(max-width:580px),(pointer:coarse) and (max-width:1100px){
+  .play-page{--control-height:176px;margin:0;padding-bottom:env(safe-area-inset-bottom,0px);overscroll-behavior-y:contain}
+  .play-page[data-game=racer]{--control-height:84px}
+  .play-page[data-game=breakout]{--control-height:70px}
+  .play-page .site-header{min-height:56px;padding:9px 14px;gap:12px}
+  .play-page .header-caption,.game-guide,.side-games{display:none}
+  .play-page .arcade-logo{font-size:13px;gap:9px}
+  .play-page .arcade-logo>b{width:30px;height:34px;font-size:32px}
+  .play-page .arcade-logo small{font-size:7px}
+  .play-page .small-button{min-width:48px;min-height:44px;padding:9px}
+  .play-layout{display:block;max-width:480px;padding:0 8px;margin:8px auto}
+  .game-machine{padding:5px;border-radius:10px}
+  .machine-hud{min-height:61px;padding:6px 9px;gap:8px}
+  .machine-hud strong{font-size:20px;margin-top:3px}
+  .machine-hud small{font-size:8px}
+  .mini-screen{height:clamp(220px,calc(var(--game-vh,100svh) - 192px - var(--control-height) - env(safe-area-inset-bottom,0px)),620px);min-height:220px;max-height:none;aspect-ratio:auto}
+  .machine-status{min-height:30px;padding:8px 10px;font-size:10px}
+  .touch-controls{height:var(--control-height);min-height:var(--control-height);padding:8px 10px;gap:12px;flex-wrap:nowrap}
+  .dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:4px;flex-shrink:0}
+  .dpad button{font-size:26px;border-radius:10px;border-bottom-width:3px;min-width:48px;min-height:48px}
+  .dpad [data-control=up]{grid-column:2;grid-row:1}
+  .dpad [data-control=left]{grid-column:1;grid-row:2}
+  .dpad [data-control=right]{grid-column:3;grid-row:2}
+  .dpad [data-control=down]{grid-column:2;grid-row:3}
+  .dpad:after{content:'ϟ';grid-column:2;grid-row:2;display:grid;place-items:center;color:#829969;font-size:26px;pointer-events:none}
+  .touch-controls[data-game=tanks]{justify-content:space-around}
+  .touch-controls[data-game=tanks]>p{display:block;max-width:108px;color:#d8e8b3;font-size:11px;line-height:2}
+  .touch-controls[data-game=snake] .fire-button{display:block;width:70px;height:70px;font-size:17px}
+  .touch-controls[data-game=snake]>p{display:none}
+  .touch-controls[data-game=racer] .dpad{display:flex;width:100%;gap:16px}
+  .touch-controls[data-game=racer] .dpad:after,.touch-controls[data-game=racer]>p{display:none}
+  .touch-controls[data-game=racer] .dpad button{flex:1;width:auto;height:64px;font-size:27px}
+  .touch-controls[data-game=racer] [data-control=left]:after{content:'向左';font-size:12px;margin-left:12px}
+  .touch-controls[data-game=racer] [data-control=right]:after{content:'向右';font-size:12px;margin-left:12px}
+  .touch-controls[data-game=breakout]{display:none}
+  .mini-overlay{padding:12px;gap:9px}
+  .mini-overlay>span:first-child,.mini-overlay>small{display:none}
+  .mini-overlay .play-star{font-size:25px;line-height:1;margin:0}
+  .mini-overlay h2{font-size:24px;margin:0;line-height:1.2}
+  .mini-overlay p{font-size:11px;line-height:1.7;margin:0}
+  .mini-overlay .primary-button{min-height:48px;margin:0;padding:12px 22px;flex-shrink:0}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .play-page .site-header{min-height:50px;padding:4px 14px}
+  .game-guide,.side-games,.play-page .header-caption{display:none}
+  .play-layout{display:block;max-width:760px;padding:0 10px;margin:4px auto}
+  .game-machine{display:grid;grid-template-columns:minmax(150px,calc((var(--game-vh,100svh) - 160px)*.75)) 170px;grid-template-rows:55px minmax(100px,1fr) 28px;justify-content:center;width:max-content;max-width:100%;height:calc(var(--game-vh,100svh) - 66px);min-height:230px;margin:auto;gap:0 10px}
+  .machine-hud{grid-column:1/-1;grid-row:1;min-height:0;padding:4px 8px}
+  .mini-screen{grid-column:1;grid-row:2;height:auto;min-height:0;max-height:none;aspect-ratio:auto}
+  .machine-status{grid-column:1;grid-row:3;font-size:8px;padding:5px;min-height:0}
+  .touch-controls{grid-column:2;grid-row:2/4;height:auto;min-height:0;flex-direction:column;justify-content:center;padding:4px;gap:6px}
+  .touch-controls[data-game=tanks]>p{display:none}
+  .touch-controls[data-game=snake]{flex-direction:column}
+  .touch-controls[data-game=snake] .fire-button{height:48px;width:90px;border-radius:9px;font-size:13px}
+  .touch-controls[data-game=snake] .fire-button small{display:none}
+  .dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:3px}
+  .dpad button{min-width:44px;min-height:44px}
+  .touch-controls[data-game=racer] .dpad{flex-direction:column;gap:14px}
+  .touch-controls[data-game=racer] .dpad button{flex:none;width:150px;height:64px}
+  .drag-strip{grid-column:2;grid-row:2/4;height:auto;min-height:70px;width:160px;margin:4px;font-size:11px;text-align:center;padding:10px}
+  .mini-overlay{padding:8px;gap:6px}
+  .mini-overlay .play-star,.mini-overlay>span:first-child,.mini-overlay>small{display:none}
+  .mini-overlay h2{font-size:18px;margin:0}
+  .mini-overlay p{font-size:10px;margin:0;line-height:1.5}
+  .mini-overlay .primary-button{min-width:130px;padding:10px;min-height:44px;font-size:12px;margin:0}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .play-page .site-header{padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+  .game-machine{grid-template-columns:minmax(150px,calc((var(--game-vh,100svh) - 160px - env(safe-area-inset-bottom,0px))*.75)) 210px;height:calc(var(--game-vh,100svh) - 66px - env(safe-area-inset-bottom,0px))}
+  .touch-controls[data-game=snake]{flex-direction:row;gap:6px}
+  .touch-controls[data-game=snake] .fire-button{width:58px;height:58px;border-radius:50%;font-size:13px}
+  .touch-controls[data-game=racer] .dpad button{width:190px}
+  .drag-strip{width:200px}
+}

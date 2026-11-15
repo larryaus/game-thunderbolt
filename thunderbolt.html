@@ -7,10 +7,11 @@
   <meta name="description" content="雷电 THUNDERBOLT — 经典纵版空战。驾驶战机穿越海岛，升级火力，挑战巨型 Boss。支持键盘和手机触控。">
   <title>雷电 THUNDERBOLT · Arcade Air Combat</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232e4236'/%3E%3Cpath d='M36 6 15 36h15l-3 22 22-32H34z' fill='%23d8ee7e'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=20261115-mobile1">
-  <script src="game.js" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261115-phone2">
+  <script src="mobile.js?v=phone2" defer></script>
+  <script src="game.js?v=phone2" defer></script>
 </head>
-<body>
+<body class="flight-page">
   <header class="topbar">
     <a class="brand" href="./" aria-label="返回游戏大厅"><span class="brand-icon">ϟ</span><span>← 游戏大厅<span class="brand-sub">THUNDERBOLT / 雷电空战</span></span></a>
     <span class="edition">EST. 1990 <span>↗</span> REIMAGINED 2026</span>
@@ -33,11 +34,11 @@
           <div class="screen-grain" aria-hidden="true"></div>
           <div id="boss-hud" class="boss-hud" hidden><span>WARNING — 空中要塞</span><div><i id="boss-health"></i></div></div>
           <div id="overlay" class="overlay">
-            <div class="overlay-content"><span id="overlay-kicker" class="overlay-kicker">INSERT COIN? NO, JUST PLAY.</span><div class="wing-mark" aria-hidden="true">✦</div><h2 id="overlay-title">准备出击<span>READY, PILOT?</span></h2><p id="overlay-description">重返经典，开启你的王牌之旅。</p><button id="start" class="start-button">开始游戏 <span>↗</span></button><span id="overlay-hint" class="overlay-hint">按 ENTER 开始 · 自动开火</span></div>
+            <div class="overlay-content"><span id="overlay-kicker" class="overlay-kicker">INSERT COIN? NO, JUST PLAY.</span><div class="wing-mark" aria-hidden="true">✦</div><h2 id="overlay-title">准备出击<span>READY, PILOT?</span></h2><p id="overlay-description">重返经典，开启你的王牌之旅。</p><button id="start" class="start-button">开始游戏 <span>↗</span></button><span id="overlay-hint" class="overlay-hint">单指拖动战机 · 自动开火</span></div>
           </div>
           <div id="announcement" class="announcement" role="status"></div>
         </div>
-        <div class="statusbar"><span class="lives" id="lives" aria-label="剩余生命">♥ ♥ ♥</span><span id="weapon">FIRE LV. 01</span><button id="bomb" aria-label="释放炸弹，剩余3枚">✦ <span id="bombs">3</span> <small>SPACE</small></button></div>
+        <div class="statusbar"><span class="lives" id="lives" aria-label="剩余生命">♥ ♥ ♥</span><span id="weapon">FIRE LV. 01</span><button id="bomb" aria-label="释放炸弹，剩余3枚">✦ <span id="bombs">3</span> <small>炸弹</small></button></div>
       </section>
       <aside class="flight-panel">
         <div class="live-label"><i></i> FLIGHT MANUAL <span>飞行手册</span></div>
@@ -45,7 +46,7 @@
         <div class="instruction"><span class="step">02</span><div><h3>尽情开火</h3><p>自动射击，专注闪避与进攻。</p><span class="auto-label">↗ AUTO FIRE ENABLED</span></div></div>
         <div class="instruction"><span class="step">03</span><div><h3>扭转战局</h3><p><kbd class="space-key">SPACE</kbd> 释放全屏炸弹</p><p>清除敌弹，危急时刻的底牌。</p></div></div>
         <div class="supply-card"><span class="eyebrow">FIELD SUPPLIES / 战地补给</span><p><b class="pickup power">P</b><span>火力升级<small>更密集的弹幕，更强的战机。</small></span></p><p><b class="pickup bomb-pickup">B</b><span>炸弹补给<small>多一份火力，多一线生机。</small></span></p><p><b class="pickup heal">+</b><span>机体修复<small>恢复一格生命，重返战场。</small></span></p></div>
-        <p class="mobile-note">↗ 手机也能玩，按住战场拖动战机。<br><span>P / ESC 暂停 · M 切换声音</span></p>
+        <p class="mobile-note">↗ 单指拖动即可移动，下方大按钮释放炸弹。<br><span>P / ESC 暂停 · M 切换声音</span></p>
       </aside>
     </div>
     <footer><span>BUILT FOR THE LOVE OF ARCADE.</span><span class="footer-center">一架战机，一整片天空。</span><span>NO DOWNLOAD. JUST PLAY. <b>ϟ</b></span></footer>

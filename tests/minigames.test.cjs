@@ -10,7 +10,7 @@ function engine(id,blocked=false){
     addEventListener(n,f){this.listeners[n]=f;},getBoundingClientRect:()=>({left:0,top:0,width:240,height:320}),setPointerCapture(){}});return elements.get(id);};
   const buttons=['up','down','left','right','fire'].map(n=>{const e=element('button-'+n);e.dataset.control=n;return e;});
   const sandbox={URLSearchParams,Math,console,location:{search:'?game='+id},HTMLElement:class{},requestAnimationFrame(){},
-    document:{getElementById:element,querySelector:()=>null,querySelectorAll:()=>buttons,addEventListener(n,f){events[n]=f;}},
+    document:{body:{dataset:{}},getElementById:element,querySelector:()=>null,querySelectorAll:()=>buttons,addEventListener(n,f){events[n]=f;}},
     window:{addEventListener(n,f){events[n]=f;}},localStorage:{getItem(k){if(blocked)throw Error('denied');return storage.get(k)??null;},setItem(k,v){if(blocked)throw Error('denied');storage.set(k,v);}}};
   const source=fs.readFileSync(path.join(__dirname,'../minigames.js'),'utf8').replace(/\}\)\(\);\s*$/,`globalThis.api={start,pause,update,draw,action,finish,keys,constructors,addScore,mode:()=>mode,game:()=>game,score:()=>score};})();`);
   vm.runInNewContext(source,sandbox);return{...sandbox.api,element,events,storage};
@@ -86,4 +86,28 @@ test('tanks: two fingers can hold movement and fire; lifting fire keeps movement
   fire.listeners.pointerup({pointerId:11});assert.equal(e.keys.has('fire'),false);assert.equal(e.keys.has('up'),true);
   const next=g.player.y;for(let i=0;i<10;i++)e.update(1/60);assert.ok(g.player.y<next);
   up.listeners.pointercancel({pointerId:10});assert.equal(e.keys.size,0);const stopped=g.player.y;e.update(1/60);assert.equal(g.player.y,stopped);
+});
+
+test('phone breakout: external drag strip controls the paddle without covering the ball',()=>{
+  const e=engine('breakout');e.start();const strip=e.element('drag-strip');
+  strip.listeners.pointerdown({pointerId:7,clientX:60,preventDefault(){}});e.update(1/60);assert.equal(e.game().paddle.x,120);
+  strip.listeners.pointermove({pointerId:7,clientX:180});e.update(1/60);assert.equal(e.game().paddle.x,360);
+  strip.listeners.pointerup({pointerId:7});strip.listeners.pointermove({pointerId:7,clientX:40});e.update(1/60);assert.equal(e.game().paddle.x,360);
+  strip.listeners.pointerdown({pointerId:8,clientX:120,preventDefault(){}});e.pause();e.pause();strip.listeners.pointermove({pointerId:8,clientX:30});e.update(1/60);assert.equal(e.game().paddle.x,240);
+});
+test('phone tanks: automatically shoots with one thumb; sliding on captured direction changes heading',()=>{
+  const e=engine('tanks');e.start();const g=e.game();g.walls=[];g.spawn=100;e.update(1/60);assert.ok(g.bullets.some(b=>!b.enemy));
+  const up=e.element('button-up');up.listeners.pointerdown({pointerId:2,preventDefault(){}});for(let i=0;i<20;i++)e.update(1/60);assert.ok(g.player.y<592);
+  up.listeners.pointermove({pointerId:2,clientX:220,clientY:160});assert.equal(g.player.dir,'right');assert.equal(e.keys.has('up'),false);assert.equal(e.keys.has('right'),true);
+  const x=g.player.x;for(let i=0;i<20;i++)e.update(1/60);assert.ok(g.player.x>x);up.listeners.pointerup({pointerId:2});assert.equal(e.keys.size,0);
+});
+test('phone snake: direction pad and hold-to-boost work without a keyboard',()=>{
+  const e=engine('snake');e.start();const up=e.element('button-up'),boost=e.element('button-fire');
+  up.listeners.pointerdown({pointerId:1,preventDefault(){}});up.listeners.pointerup({pointerId:1});boost.listeners.pointerdown({pointerId:2,preventDefault(){}});
+  const g=e.game(),y=g.body[0].y;e.update(.07);assert.equal(g.body[0].y,y-1);boost.listeners.pointercancel({pointerId:2});assert.equal(e.keys.has('fire'),false);
+});
+test('phone racer: large buttons and a swipe each move exactly one lane',()=>{
+  const e=engine('racer');e.start();const left=e.element('button-left');left.listeners.pointerdown({pointerId:3,preventDefault(){}});assert.equal(e.game().lane,0);left.listeners.pointerup({pointerId:3});
+  const c=e.element('mini-canvas');c.listeners.pointerdown({pointerId:4,clientX:50,clientY:100,preventDefault(){}});c.listeners.pointermove({pointerId:4,clientX:80,clientY:100});assert.equal(e.game().lane,1);c.listeners.pointerup({pointerId:4});c.listeners.pointermove({pointerId:4,clientX:120,clientY:100});assert.equal(e.game().lane,1);
+  e.events.orientationchange();assert.equal(e.mode(),'paused');
 });

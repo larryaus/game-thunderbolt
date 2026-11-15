@@ -6,17 +6,17 @@
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const overlap = (a,b) => Math.abs(a.x-b.x)<(a.w+b.w)/2 && Math.abs(a.y-b.y)<(a.h+b.h)/2;
   const configs = {
-    breakout:{title:'霓虹打砖块',label:'02 / NEON BREAKOUT',description:'每一次反弹，都离清屏更近一步。',controls:'鼠标 / 触屏拖动挡板\n← → 或 A / D 移动\n接住道具，自动触发多球或激光',tip:'击中挡板边缘可以改变反弹角度。接住「×3」分裂球，接住「L」获得 8 秒激光。',touch:'拖动战场移动挡板\n也可使用方向键',hint:'接住小球，击碎所有砖块。\n收集 ×3 多球和 L 激光道具。'},
-    snake:{title:'贪吃蛇进化',label:'03 / SNAKE EVOLUTION',description:'再吃一口，再长一点。别咬到自己。',controls:'方向键 / WASD 转向\n手机：滑动战场，或点击方向按钮\n按住空格加速',tip:'每吃 5 颗能量球会升级并增加障碍。蓝色能量球让你短暂穿越边界；仍要避开自身和障碍。',touch:'滑动战场或点方向\n蓝色能量球可穿墙',hint:'吃能量球成长，避开障碍与自身。\n蓝色能量球带来 8 秒边界穿越。'},
+    breakout:{title:'霓虹打砖块',label:'02 / NEON BREAKOUT',description:'每一次反弹，都离清屏更近一步。',controls:'鼠标 / 触屏拖动挡板\n← → 或 A / D 移动\n接住道具，自动触发多球或激光',tip:'击中挡板边缘可以改变反弹角度。接住「×3」分裂球，接住「L」获得 8 秒激光。',touch:'左右拖动下方操作带\n手指不挡球，接球更轻松',hint:'左右拖动下方操作带控制挡板。\n接住小球，击碎所有砖块。'},
+    snake:{title:'贪吃蛇进化',label:'03 / SNAKE EVOLUTION',description:'再吃一口，再长一点。别咬到自己。',controls:'方向键 / WASD 转向\n手机：滑动战场，或点击方向按钮\n按住空格加速',tip:'每吃 5 颗能量球会升级并增加障碍。蓝色能量球让你短暂穿越边界；仍要避开自身和障碍。',touch:'滑动转向 / 点方向键\n按住加速按钮可加速',hint:'在战场滑动或点方向键转向。\n吃能量球，避开障碍与自身。'},
     racer:{title:'极速闪避',label:'04 / HIGHWAY DASH',description:'眼睛看远一点，纪录就近一点。',controls:'← → / A D 左右变道\n手机：点击下方左右按钮\n也可在战场左右滑动',tip:'金币每枚加 100 分。每次受撞后短暂无敌；车速逐渐提高，提前选择安全车道。',touch:'点击左右按钮变道\n也可以左右滑动',hint:'左右变道，躲避车流，收集金币。\n三次碰撞后本局结束。'},
-    tanks:{title:'坦克保卫战',label:'05 / BATTLE GUARD',description:'一辆坦克，一座不能失守的基地。',controls:'方向键 / WASD 移动与瞄准\n按住空格连续开火\n手机：方向按钮 + FIRE 开火',tip:'砖墙可以击碎，钢墙会挡住炮弹。你的炮弹不会伤害基地；敌弹命中基地则立即结束，优先拦截下方敌军。',touch:'按住方向移动\n按住 FIRE 连续开火',hint:'消灭每波敌军，同时守住 ★ 基地。\n砖墙可破坏，钢墙不可破坏。'}
+    tanks:{title:'坦克保卫战',label:'05 / BATTLE GUARD',description:'一辆坦克，一座不能失守的基地。',controls:'方向键 / WASD 移动与瞄准\n自动开火，无需按射击键\n手机：按住方向，滑动换向',tip:'砖墙可以击碎，钢墙会挡住炮弹。你的炮弹不会伤害基地；敌弹命中基地则立即结束，优先拦截下方敌军。',touch:'自动开火已开启\n按住方向，滑动换向',hint:'按住方向移动，滑动换向，自动开火。\n消灭敌军，守住 ★ 基地。'}
   };
   const requested = new URLSearchParams(location.search).get('game');
   const id = Object.hasOwn(configs,requested) ? requested : 'breakout', config = configs[id];
   const canvas = $('mini-canvas'), ctx = canvas.getContext('2d');
   const keys = new Set(), pointers = new Map();
   let mode='ready', score=0, best=0, game, clock=0, noticeTime=0, audio, audioEnabled=false, last=0, accumulator=0;
-  let particles=[];
+  let particles=[], swipe=null, stripPointer=null;
   function read(k,f){try{return localStorage.getItem(k)??f;}catch{return f;}}
   function save(k,v){try{localStorage.setItem(k,String(v));}catch{}}
   best=Math.max(0,Number(read(`arcade-best-${id}`,0))||0); audioEnabled=read('arcade-sound','off')==='on';
@@ -30,7 +30,7 @@
   function finish(reason){if(mode!=='playing')return;mode='over';record();clearInput();noticeTime=0;$('mini-message').textContent='';$('mini-kicker').textContent=score>=best&&score>0?'NEW HIGH SCORE. NICELY PLAYED!':'ONE MORE ROUND?';showOverlay('本局结束',`${reason}\n得分 ${String(score).padStart(6,'0')} · 第 ${game.level} 关`,'再来一局 ↗');beep(130,.3);hud();}
   function showOverlay(title,text,button){$('mini-overlay-title').textContent=title;$('mini-overlay-text').textContent=text;$('mini-start').textContent=button;$('mini-overlay').hidden=false;}
   function start(){audioUnlock();clearInput();mode='playing';score=0;clock=0;particles=[];noticeTime=0;$('mini-message').textContent='';game=constructors[id]();$('mini-overlay').hidden=true;message('LET’S PLAY',1);hud();}
-  function clearInput(){keys.clear();pointers.clear();}
+  function clearInput(){keys.clear();pointers.clear();swipe=null;stripPointer=null;document.querySelectorAll('[data-control]').forEach(b=>b.setAttribute('aria-pressed','false'));}
   function pause(){if(mode==='playing'){mode='paused';clearInput();showOverlay('稍作休整','深呼吸，下一局操作更从容。','继续游戏 ↗');}else if(mode==='paused'){mode='playing';$('mini-overlay').hidden=true;audioUnlock();}hud();}
   function hud(){
     $('mini-score').textContent=String(score).padStart(6,'0');$('mini-best').textContent=String(Math.max(best,score)).padStart(6,'0');
@@ -125,14 +125,14 @@
     function board(){g.walls=[];for(let r=2;r<17;r++)for(let c=1;c<14;c++)if(r%4===2&&![3,7,11].includes(c)||r%4===0&&c%4===1){g.walls.push({x:c*32+16,y:r*32+16,w:32,h:32,type:r%4===0?'steel':'brick'});}for(const [c,r] of [[6,17],[7,17],[8,17],[6,18],[8,18],[6,19],[7,19],[8,19]])g.walls.push({x:c*32+16,y:r*32+16,w:32,h:32,type:'brick'});
       g.player=tank(176,592);g.enemies=[];g.bullets=[];g.inv=2;g.spawned=g.killed=0;g.spawn=.7;g.target=6+g.level*2;}
     function blocked(t,x,y){const at={...t,x,y};return x<14||x>W-14||y<14||y>H-14||overlap(at,base)||g.walls.some(w=>overlap(at,w))||[g.player,...g.enemies].some(e=>e!==t&&e.hp>0&&overlap(at,e));}
-    function turn(t,dir){if(t.dir===dir)return;const d=dirs[dir],perpendicular=d.x?'y':'x',aligned=Math.round((t[perpendicular]-16)/32)*32+16;if(Math.abs(aligned-t[perpendicular])<8){const x=perpendicular==='x'?aligned:t.x,y=perpendicular==='y'?aligned:t.y;if(!blocked(t,x,y))t[perpendicular]=aligned;}t.dir=dir;}
+    function turn(t,dir){if(t.dir===dir)return;const d=dirs[dir],perpendicular=d.x?'y':'x',aligned=Math.round((t[perpendicular]-16)/32)*32+16;if(Math.abs(aligned-t[perpendicular])<=(t.enemy?8:16)){const x=perpendicular==='x'?aligned:t.x,y=perpendicular==='y'?aligned:t.y;if(!blocked(t,x,y))t[perpendicular]=aligned;}t.dir=dir;}
     function move(t,dt,speed){const d=dirs[t.dir],x=t.x+d.x*speed*dt,y=t.y+d.y*speed*dt;if(blocked(t,x,y))return false;t.x=x;t.y=y;return true;}
     function shoot(t){if(t.cooldown>0)return;const d=dirs[t.dir];g.bullets.push({x:t.x+d.x*19,y:t.y+d.y*19,w:5,h:5,vx:d.x*(t.enemy?235:350),vy:d.y*(t.enemy?235:350),enemy:t.enemy});t.cooldown=t.enemy?Math.max(.7,1.6-g.level*.08):.28;beep(t.enemy?190:460,.035);}
     g.action=n=>{if(dirs[n])turn(g.player,n);if(n==='fire')shoot(g.player);};
     g.update=dt=>{
       g.inv=Math.max(0,g.inv-dt);g.player.cooldown=Math.max(0,g.player.cooldown-dt);
       if(g.transition>0){g.transition-=dt;if(g.transition<=0){g.level++;board();message(`STAGE ${g.level} · 守住基地`,2);}return;}
-      const active=['up','left','down','right'].filter(n=>keys.has(n));if(active.length){turn(g.player,active[active.length-1]);move(g.player,dt,115);}if(keys.has('fire'))shoot(g.player);
+      const active=['up','left','down','right'].filter(n=>keys.has(n));if(active.length){turn(g.player,active[active.length-1]);move(g.player,dt,115);}shoot(g.player);
       g.spawn-=dt;if(g.spawned<g.target&&g.enemies.length<4&&g.spawn<=0){const points=[48,240,432].filter(x=>![g.player,...g.enemies].some(e=>Math.abs(e.x-x)<30&&e.y<50));if(points.length){g.enemies.push(tank(pick(points),16,true));g.spawned++;}g.spawn=1.5;}
       for(const e of g.enemies){e.cooldown=Math.max(0,e.cooldown-dt);e.think-=dt;if(e.think<=0){const target=Math.random()<.65?base:g.player;const options=[];if(target.x<e.x-16)options.push('left');if(target.x>e.x+16)options.push('right');if(target.y>e.y+16)options.push('down');if(target.y<e.y-16)options.push('up');turn(e,Math.random()<.7&&options.length?pick(options):pick(Object.keys(dirs)));e.think=random(.4,1.2);}
         if(!move(e,dt,Math.min(105,58+g.level*5)))e.think=0;shoot(e);}
@@ -153,7 +153,7 @@
   const constructors={breakout:Breakout,snake:Snake,racer:Racer,tanks:Tanks};
   document.title=`${config.title} · 口袋街机厅`;
   $('game-title').textContent=config.title;$('header-game').textContent=config.label;$('game-label').textContent=config.label;$('game-description').textContent=config.description;
-  $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;
+  $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;document.body.dataset.game=id;$('drag-strip').hidden=id!=='breakout';if(id==='snake'){$('fire-button').innerHTML='加速<br><small>按住</small>';$('fire-button').setAttribute('aria-label','按住加速');}
   canvas.setAttribute('aria-label',`${config.title}游戏画面。${config.controls}`);
   document.querySelector(`.side-games a[href="play.html?game=${id}"]`)?.classList.add('current');
   const mapping={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',' ':'fire'};
@@ -162,19 +162,37 @@
     if(key==='p'||key==='Escape')pause();else if(key==='m')toggleAudio();else if(key==='Enter'){if(mode==='paused')pause();else if(mode==='ready'||mode==='over')start();}
     else if(mapping[key]&&mode==='playing'){keys.add(mapping[key]);action(mapping[key]);}});
   window.addEventListener('keyup',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;keys.delete(mapping[key]);});
-  document.querySelectorAll('[data-control]').forEach(button=>{
-    button.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();button.setPointerCapture(e.pointerId);const name=button.dataset.control;pointers.set(e.pointerId,name);keys.add(name);action(name);});
-    const release=e=>{const name=pointers.get(e.pointerId);pointers.delete(e.pointerId);if(![...pointers.values()].includes(name))keys.delete(name);};
+  const controlButtons=[...document.querySelectorAll('[data-control]')];
+  function setControl(pointerId,name){
+    const old=pointers.get(pointerId);pointers.delete(pointerId);
+    if(old&&![...pointers.values()].includes(old))keys.delete(old);
+    if(name){pointers.set(pointerId,name);keys.add(name);if(old!==name)action(name);}
+    controlButtons.forEach(b=>b.setAttribute('aria-pressed',String([...pointers.values()].includes(b.dataset.control))));
+  }
+  controlButtons.forEach(button=>{
+    button.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();button.setPointerCapture(e.pointerId);setControl(e.pointerId,button.dataset.control);});
+    button.addEventListener('pointermove',e=>{
+      if(mode!=='playing'||!pointers.has(e.pointerId)||button.dataset.control==='fire'||id==='racer')return;
+      const r=$('direction-pad').getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;
+      if(Math.hypot(dx,dy)<12)return;
+      setControl(e.pointerId,Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up');
+    });
+    const release=e=>setControl(e.pointerId,null);
     button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
   });
-  let swipe=null;
+  const strip=$('drag-strip');
+  function stripMove(e){const r=strip.getBoundingClientRect();game.pointer?.(clamp((e.clientX-r.left)/r.width,0,1)*W);}
+  strip.addEventListener('pointerdown',e=>{if(mode!=='playing'||id!=='breakout')return;e.preventDefault();strip.setPointerCapture(e.pointerId);stripPointer=e.pointerId;stripMove(e);});
+  strip.addEventListener('pointermove',e=>{if(mode==='playing'&&stripPointer===e.pointerId)stripMove(e);});
+  const releaseStrip=e=>{if(e.pointerId===stripPointer)stripPointer=null;};
+  strip.addEventListener('pointerup',releaseStrip);strip.addEventListener('pointercancel',releaseStrip);strip.addEventListener('lostpointercapture',releaseStrip);
   function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H};}
   canvas.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=pos(e);swipe={...p,id:e.pointerId};game.pointer?.(p.x,p.y);});
   canvas.addEventListener('pointermove',e=>{if(mode!=='playing')return;const p=pos(e);if(id==='breakout'&&(e.pointerType==='mouse'||swipe?.id===e.pointerId))game.pointer?.(p.x,p.y);if(!swipe||swipe.id!==e.pointerId)return;
     const dx=p.x-swipe.x,dy=p.y-swipe.y;if(Math.hypot(dx,dy)>24){if(id==='snake')action(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up');else if(id==='racer'&&Math.abs(dx)>24)action(dx>0?'right':'left');swipe={...p,id:e.pointerId};}});
   const clearSwipe=()=>{swipe=null;};canvas.addEventListener('pointerup',clearSwipe);canvas.addEventListener('pointercancel',clearSwipe);canvas.addEventListener('lostpointercapture',clearSwipe);
   $('mini-start').addEventListener('click',()=>mode==='paused'?pause():start());$('mini-pause').addEventListener('click',pause);$('audio-toggle').addEventListener('click',toggleAudio);
-  window.addEventListener('blur',()=>{if(mode==='playing')pause();clearInput();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause();});window.addEventListener('pagehide',record);
+  window.addEventListener('blur',()=>{if(mode==='playing')pause();clearInput();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause();});window.addEventListener('pagehide',record);window.addEventListener('orientationchange',()=>{if(mode==='playing')pause();});
   function update(dt){if(mode!=='playing')return;clock+=dt;game.update(dt);if(noticeTime>0){noticeTime-=dt;if(noticeTime<=0)$('mini-message').textContent='';}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;});particles=particles.filter(p=>p.life>0);if(Math.floor(clock*10)!==Math.floor((clock-dt)*10))hud();}
   function draw(){game.draw();particles.forEach(p=>{ctx.globalAlpha=clamp(p.life*3,0,1);rect(p.x,p.y,4,4,p.color);});ctx.globalAlpha=1;}
   function frame(time){accumulator+=Math.min(.05,(time-last)/1000||0);last=time;while(accumulator>=1/60){update(1/60);accumulator-=1/60;}draw();requestAnimationFrame(frame);}

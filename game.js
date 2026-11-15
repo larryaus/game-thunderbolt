@@ -15,6 +15,7 @@
   let kills = 0, bossSpawned = false, transition = 0, flash = 0, shake = 0, world = 0, messageTime = 0;
   let player = makePlayer(), lastTime = 0, accumulator = 0, pointer = null;
   const keys = new Set();
+  let pointerId=null, dragLast=null;
   const islands = [{x:65,y:35,s:1.05},{x:410,y:380,s:.8},{x:110,y:790,s:.65},{x:345,y:1100,s:1.2}];
   function makePlayer() { return { x: W / 2, y: H - 105, lives: 3, bombs: 3, level: 1, cooldown: 0, invincible: 2.5 }; }
   function unlockAudio() {
@@ -44,7 +45,7 @@
   function start() {
     unlockAudio(); mode = 'playing'; score = 0; stage = 1; elapsed = stageTime = 0; waveTime = .6;
     bullets = []; enemies = []; shots = []; particles = []; pickups = []; boss = null; kills = 0;
-    bossSpawned = false; transition = flash = shake = 0; player = makePlayer(); pointer = null; keys.clear();
+    bossSpawned = false; transition = flash = shake = 0; player = makePlayer(); pointer = null; pointerId=null; dragLast=null; keys.clear();
     $('overlay').hidden = true; announce('STAGE 01\n太平洋前线'); hud(); tone(440, .25, 'sawtooth', .04, 880);
   }
   function showOverlay(title, subtitle, description, button, kicker, hint) {
@@ -54,13 +55,13 @@
     $('overlay-kicker').textContent = kicker; $('overlay-hint').textContent = hint; $('overlay').hidden = false;
   }
   function pause() {
-    if (mode === 'playing') { mode = 'paused'; keys.clear(); pointer = null; showOverlay('稍作休整', 'MISSION PAUSED', '深呼吸，下一次出击更从容。', '继续飞行', 'TAKE A BREATH, PILOT.', '按 P / ESC / ENTER 继续'); }
+    if (mode === 'playing') { mode = 'paused'; keys.clear(); pointer = null; pointerId=null; dragLast=null; showOverlay('稍作休整', 'MISSION PAUSED', '深呼吸，下一次出击更从容。', '继续飞行', 'TAKE A BREATH, PILOT.', '点击继续飞行 · P / ESC 也可继续'); }
     else if (mode === 'paused') { mode = 'playing'; $('overlay').hidden = true; unlockAudio(); }
     hud();
   }
   function gameOver() {
-    mode = 'over'; persistBest(); pointer = null; keys.clear(); $('announcement').textContent = ''; messageTime = 0;
-    showOverlay('任务结束', 'UNTIL NEXT FLIGHT', `本次得分 ${String(score).padStart(6, '0')} · 到达第 ${stage} 战区`, '再次出击', score >= best && score > 0 ? 'NEW HIGH SCORE. WELL FLOWN!' : 'THE SKY IS WAITING FOR YOU.', '按 ENTER 再来一局'); hud();
+    mode = 'over'; persistBest(); pointer = null; pointerId=null; dragLast=null; keys.clear(); $('announcement').textContent = ''; messageTime = 0;
+    showOverlay('任务结束', 'UNTIL NEXT FLIGHT', `本次得分 ${String(score).padStart(6, '0')} · 到达第 ${stage} 战区`, '再次出击', score >= best && score > 0 ? 'NEW HIGH SCORE. WELL FLOWN!' : 'THE SKY IS WAITING FOR YOU.', '点击再次出击，重返天空'); hud();
   }
   function burst(x, y, color, count = 15, size = 1) {
     for (let i = 0; i < count; i++) { const a = rand(0, TAU), speed = rand(20, 150) * size; particles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:rand(.2,.7),color,size:rand(2,6)*size}); }
@@ -207,12 +208,14 @@
     if(key==='m')toggleSound();else if(key==='p'||key==='Escape')pause();else if(key==='Enter'){if(mode==='ready'||mode==='over')start();else if(mode==='paused')pause();}else if(key===' '){unlockAudio();useBomb();}else if(mode==='playing')keys.add(key);
   });
   window.addEventListener('keyup',e=>keys.delete(e.key.length===1?e.key.toLowerCase():e.key));
-  function pointerPosition(e){const r=canvas.getBoundingClientRect();return{x:clamp((e.clientX-r.left)/r.width*W,22,W-22),y:clamp((e.clientY-r.top)/r.height*H-30,35,H-30)};}
-  let pointerId=null;
-  canvas.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();unlockAudio();pointerId=e.pointerId;canvas.setPointerCapture(e.pointerId);pointer=pointerPosition(e);});
-  canvas.addEventListener('pointermove',e=>{if(mode==='playing'&&e.pointerId===pointerId)pointer=pointerPosition(e);});
-  function releasePointer(e){if(e.pointerId===pointerId){pointerId=null;pointer=null;}}
+  function pointerPosition(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H};}
+  canvas.addEventListener('pointerdown',e=>{if(mode!=='playing'||pointerId!==null)return;e.preventDefault();unlockAudio();pointerId=e.pointerId;canvas.setPointerCapture(e.pointerId);dragLast=pointerPosition(e);pointer={x:player.x,y:player.y};});
+  canvas.addEventListener('pointermove',e=>{if(mode!=='playing'||e.pointerId!==pointerId||!dragLast)return;
+    const next=pointerPosition(e);pointer={x:clamp((pointer?.x??player.x)+next.x-dragLast.x,22,W-22),y:clamp((pointer?.y??player.y)+next.y-dragLast.y,35,H-30)};dragLast=next;
+  });
+  function releasePointer(e){if(e.pointerId===pointerId){pointerId=null;pointer=null;dragLast=null;}}
   canvas.addEventListener('pointerup',releasePointer);canvas.addEventListener('pointercancel',releasePointer);canvas.addEventListener('lostpointercapture',releasePointer);
+  window.addEventListener('orientationchange',()=>{if(mode==='playing')pause();});
   window.addEventListener('blur',()=>{if(mode==='playing')pause();keys.clear();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause();});
   window.addEventListener('pagehide',persistBest);
