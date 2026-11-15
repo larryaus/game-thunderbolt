@@ -190,3 +190,4 @@
   .touch-controls[data-game=warriors] .dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px)}
   .touch-controls[data-game=warriors] .dpad button{min-width:44px;min-height:44px}
 }
+.original-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated}.original-art .art-label{background:#122019b3;padding:4px 6px;color:#edf1d0}.original-art .art-tag{background:#142319c9;color:#e9edcf}
