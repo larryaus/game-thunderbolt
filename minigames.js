@@ -9,7 +9,10 @@
     breakout:{title:'霓虹打砖块',label:'02 / NEON BREAKOUT',description:'每一次反弹，都离清屏更近一步。',controls:'鼠标 / 触屏拖动挡板\n← → 或 A / D 移动\n接住道具，自动触发多球或激光',tip:'击中挡板边缘可以改变反弹角度。接住「×3」分裂球，接住「L」获得 8 秒激光。',touch:'左右拖动下方操作带\n手指不挡球，接球更轻松',hint:'左右拖动下方操作带控制挡板。\n接住小球，击碎所有砖块。'},
     snake:{title:'贪吃蛇进化',label:'03 / SNAKE EVOLUTION',description:'再吃一口，再长一点。别咬到自己。',controls:'方向键 / WASD 转向\n手机：滑动战场，或点击方向按钮\n按住空格加速',tip:'每吃 5 颗能量球会升级并增加障碍。蓝色能量球让你短暂穿越边界；仍要避开自身和障碍。',touch:'滑动转向 / 点方向键\n按住加速按钮可加速',hint:'在战场滑动或点方向键转向。\n吃能量球，避开障碍与自身。'},
     racer:{title:'极速闪避',label:'04 / HIGHWAY DASH',description:'眼睛看远一点，纪录就近一点。',controls:'← → / A D 左右变道\n手机：点击下方左右按钮\n也可在战场左右滑动',tip:'金币每枚加 100 分。每次受撞后短暂无敌；车速逐渐提高，提前选择安全车道。',touch:'点击左右按钮变道\n也可以左右滑动',hint:'左右变道，躲避车流，收集金币。\n三次碰撞后本局结束。'},
-    tanks:{title:'坦克保卫战',label:'05 / BATTLE GUARD',description:'一辆坦克，一座不能失守的基地。',controls:'方向键 / WASD 移动与瞄准\n自动开火，无需按射击键\n手机：按住方向，滑动换向',tip:'砖墙可以击碎，钢墙会挡住炮弹。你的炮弹不会伤害基地；敌弹命中基地则立即结束，优先拦截下方敌军。',touch:'自动开火已开启\n按住方向，滑动换向',hint:'按住方向移动，滑动换向，自动开火。\n消灭敌军，守住 ★ 基地。'}
+    tanks:{title:'坦克保卫战',label:'05 / BATTLE GUARD',description:'一辆坦克，一座不能失守的基地。',controls:'方向键 / WASD 移动与瞄准\n自动开火，无需按射击键\n手机：按住方向，滑动换向',tip:'砖墙可以击碎，钢墙会挡住炮弹。你的炮弹不会伤害基地；敌弹命中基地则立即结束，优先拦截下方敌军。',touch:'自动开火已开启\n按住方向，滑动换向',hint:'按住方向移动，滑动换向，自动开火。\n消灭敌军，守住 ★ 基地。'},
+    moles:{title:'打地鼠',label:'06 / WHACK A MOLE',description:'眼疾手快，快乐就藏在下一只地鼠里。',controls:'手机：直接点击冒出的地鼠\n电脑：鼠标点击\n避开黑色炸弹，连续击中可加分',tip:'每局 60 秒。地鼠漏掉只会断连击；误点三次炸弹才会提前结束。不要点黑色带引线的炸弹。',touch:'直接点击地鼠',hint:'直接点击地鼠，连击得高分。\n60 秒挑战，小心黑色炸弹！'},
+    match:{title:'连连看',label:'07 / CONNECT PAIRS',description:'找出相同图案，把快乐连成一线。',controls:'点击两张相同图案\n连线最多拐两个弯，可走外圈\n下方按钮提供提示和重排',tip:'连线不能穿过其他图案。配对成功加 2 秒，错误配对扣 3 秒；无可连接组合时自动免费重排。',touch:'点相同图案配对',hint:'点击两张相同图案，最多拐两次。\n可走外圈，下方有提示和重排。'},
+    commando:{title:'合金弹头风格',label:'08 / METAL COMMANDO',description:'横穿战区，救出战友，突破钢铁防线。',controls:'按住左右按钮移动，自动射击\n点跳跃按钮 / 空格 / ↑ 跳跃\n键盘 A D / 左右键也可移动',tip:'朝移动方向自动开火，击碎木箱和囚笼。救援会恢复生命，受伤后短暂无敌。连续突破三大战区的装甲 Boss。',touch:'自动射击已开启\n左手移动，右手跳跃',hint:'左手按左右移动，右手点跳跃。\n自动射击，救援战友，击败 Boss。'}
   };
   const requested = new URLSearchParams(location.search).get('game');
   const id = Object.hasOwn(configs,requested) ? requested : 'breakout', config = configs[id];
@@ -34,8 +37,8 @@
   function pause(){if(mode==='playing'){mode='paused';clearInput();showOverlay('稍作休整','深呼吸，下一局操作更从容。','继续游戏 ↗');}else if(mode==='paused'){mode='playing';$('mini-overlay').hidden=true;audioUnlock();}hud();}
   function hud(){
     $('mini-score').textContent=String(score).padStart(6,'0');$('mini-best').textContent=String(Math.max(best,score)).padStart(6,'0');
-    $('mini-lives').textContent=id==='snake'?`长度 ${game.body.length}`:'♥ '.repeat(Math.max(0,game.lives));
-    $('mini-stage').textContent=`STAGE ${String(game.level).padStart(2,'0')}`;$('mini-status').textContent=game.status();
+    $('mini-lives').textContent=game.lifeLabel?.()??(id==='snake'?`长度 ${game.body.length}`:'♥ '.repeat(Math.max(0,game.lives)));
+    $('mini-stage').textContent=`STAGE ${String(game.level).padStart(2,'0')}`;$('mini-status').textContent=game.status();if(id==='match'){$('hint-button').textContent=`提示 ${game.hints}`;$('shuffle-button').textContent=`重排 ${game.shuffles}`;$('hint-button').disabled=mode!=='playing'||game.hints===0;$('shuffle-button').disabled=mode!=='playing'||game.shuffles===0;}
     $('mini-pause').disabled=!['playing','paused'].includes(mode);$('mini-pause').textContent=mode==='paused'?'▶':'Ⅱ';$('mini-pause').setAttribute('aria-label',mode==='paused'?'继续游戏':'暂停游戏');
   }
   function spark(x,y,color,n=10){for(let i=0;i<n;i++)particles.push({x,y,vx:random(-100,100),vy:random(-110,110),life:random(.2,.55),color});}
@@ -150,12 +153,13 @@
     g.draw=()=>{background('#354335');g.walls.forEach(w=>{if(w.type==='steel'){rect(w.x-15,w.y-15,30,30,'#8c9890');rect(w.x-12,w.y-12,24,24,'#64766d');rect(w.x-10,w.y-10,20,3,'#b6beb0');}else{rect(w.x-15,w.y-15,30,30,'#ad805d');for(let r=0;r<3;r++){rect(w.x-15,w.y-15+r*10,30,1,'#644e3d');rect(w.x+(r%2?-7:1),w.y-15+r*10,1,10,'#6e533d');}}});rect(225,577,30,30,'#c4b27c');text('★',240,600,'#344a35',25);g.enemies.forEach(e=>drawTank(e,'#c88b70'));if(g.inv<=0||Math.floor(g.inv*10)%2===0)drawTank(g.player,'#c9d893');g.bullets.forEach(b=>rect(b.x-2,b.y-3,5,7,b.enemy?'#f0b18d':'#e9f5ac'));};
     board();return g;
   }
-  const constructors={breakout:Breakout,snake:Snake,racer:Racer,tanks:Tanks};
+  const constructors={breakout:Breakout,snake:Snake,racer:Racer,tanks:Tanks,...window.ArcadeExtras({ctx,W,H,keys,clamp,random,pick,overlap,addScore,finish,message,beep,spark,rect,text,background})};
   document.title=`${config.title} · 口袋街机厅`;
   $('game-title').textContent=config.title;$('header-game').textContent=config.label;$('game-label').textContent=config.label;$('game-description').textContent=config.description;
-  $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;document.body.dataset.game=id;$('drag-strip').hidden=id!=='breakout';if(id==='snake'){$('fire-button').innerHTML='加速<br><small>按住</small>';$('fire-button').setAttribute('aria-label','按住加速');}
+  $('controls-description').textContent=config.controls;$('game-tip').textContent=config.tip;$('touch-tip').textContent=config.touch;$('touch-controls').dataset.game=id;document.body.dataset.game=id;$('drag-strip').hidden=id!=='breakout';if(id==='commando'){$('fire-button').innerHTML='跳跃<br><small>JUMP</small>';$('fire-button').setAttribute('aria-label','跳跃');}if(id==='snake'){$('fire-button').innerHTML='加速<br><small>按住</small>';$('fire-button').setAttribute('aria-label','按住加速');}
+  $('puzzle-tools').hidden=id!=='match';$('hint-button').addEventListener('click',()=>{action('hint');hud();});$('shuffle-button').addEventListener('click',()=>{action('shuffle');hud();});
   canvas.setAttribute('aria-label',`${config.title}游戏画面。${config.controls}`);
-  document.querySelector(`.side-games a[href="play.html?game=${id}"]`)?.classList.add('current');
+  document.querySelector(`.side-games a[href^="play.html?game=${id}"]`)?.classList.add('current');
   const mapping={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',' ':'fire'};
   window.addEventListener('keydown',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;if(mapping[key]||['p','m','Escape'].includes(key))e.preventDefault();if(e.repeat)return;
     if(key==='Enter'&&e.target instanceof HTMLElement&&e.target.closest('button,a'))return;
@@ -172,7 +176,7 @@
   controlButtons.forEach(button=>{
     button.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();button.setPointerCapture(e.pointerId);setControl(e.pointerId,button.dataset.control);});
     button.addEventListener('pointermove',e=>{
-      if(mode!=='playing'||!pointers.has(e.pointerId)||button.dataset.control==='fire'||id==='racer')return;
+      if(mode!=='playing'||!pointers.has(e.pointerId)||button.dataset.control==='fire'||id==='racer'||id==='commando')return;
       const r=$('direction-pad').getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;
       if(Math.hypot(dx,dy)<12)return;
       setControl(e.pointerId,Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up');
@@ -187,7 +191,7 @@
   const releaseStrip=e=>{if(e.pointerId===stripPointer)stripPointer=null;};
   strip.addEventListener('pointerup',releaseStrip);strip.addEventListener('pointercancel',releaseStrip);strip.addEventListener('lostpointercapture',releaseStrip);
   function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H};}
-  canvas.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=pos(e);swipe={...p,id:e.pointerId};game.pointer?.(p.x,p.y);});
+  canvas.addEventListener('pointerdown',e=>{if(mode!=='playing')return;e.preventDefault();canvas.setPointerCapture(e.pointerId);const p=pos(e);swipe={...p,id:e.pointerId};game.pointer?.(p.x,p.y);audioUnlock();game.tap?.(p.x,p.y);hud();});
   canvas.addEventListener('pointermove',e=>{if(mode!=='playing')return;const p=pos(e);if(id==='breakout'&&(e.pointerType==='mouse'||swipe?.id===e.pointerId))game.pointer?.(p.x,p.y);if(!swipe||swipe.id!==e.pointerId)return;
     const dx=p.x-swipe.x,dy=p.y-swipe.y;if(Math.hypot(dx,dy)>24){if(id==='snake')action(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up');else if(id==='racer'&&Math.abs(dx)>24)action(dx>0?'right':'left');swipe={...p,id:e.pointerId};}});
   const clearSwipe=()=>{swipe=null;};canvas.addEventListener('pointerup',clearSwipe);canvas.addEventListener('pointercancel',clearSwipe);canvas.addEventListener('lostpointercapture',clearSwipe);

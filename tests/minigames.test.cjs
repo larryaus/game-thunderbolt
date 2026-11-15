@@ -13,9 +13,10 @@ function engine(id,blocked=false){
     document:{body:{dataset:{}},getElementById:element,querySelector:()=>null,querySelectorAll:()=>buttons,addEventListener(n,f){events[n]=f;}},
     window:{addEventListener(n,f){events[n]=f;}},localStorage:{getItem(k){if(blocked)throw Error('denied');return storage.get(k)??null;},setItem(k,v){if(blocked)throw Error('denied');storage.set(k,v);}}};
   const source=fs.readFileSync(path.join(__dirname,'../minigames.js'),'utf8').replace(/\}\)\(\);\s*$/,`globalThis.api={start,pause,update,draw,action,finish,keys,constructors,addScore,mode:()=>mode,game:()=>game,score:()=>score};})();`);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extra-games.js'),'utf8'),sandbox);
   vm.runInNewContext(source,sandbox);return{...sandbox.api,element,events,storage};
 }
-for(const id of ['breakout','snake','racer','tanks']){
+for(const id of ['breakout','snake','racer','tanks','moles','match','commando']){
   test(`${id}: ready, start, pause, record and fresh restart`,()=>{
     const e=engine(id);assert.equal(e.mode(),'ready');e.start();e.draw();const g=e.game();e.pause();assert.equal(e.mode(),'paused');e.update(.5);assert.equal(e.game(),g);e.pause();assert.equal(e.mode(),'playing');
     e.addScore(777);e.finish('test');assert.equal(e.mode(),'over');assert.equal(e.storage.get('arcade-best-'+id),'777');e.start();assert.equal(e.score(),0);assert.equal(e.game().level,1);e.events.blur();assert.equal(e.mode(),'paused');
@@ -110,4 +111,55 @@ test('phone racer: large buttons and a swipe each move exactly one lane',()=>{
   const e=engine('racer');e.start();const left=e.element('button-left');left.listeners.pointerdown({pointerId:3,preventDefault(){}});assert.equal(e.game().lane,0);left.listeners.pointerup({pointerId:3});
   const c=e.element('mini-canvas');c.listeners.pointerdown({pointerId:4,clientX:50,clientY:100,preventDefault(){}});c.listeners.pointermove({pointerId:4,clientX:80,clientY:100});assert.equal(e.game().lane,1);c.listeners.pointerup({pointerId:4});c.listeners.pointermove({pointerId:4,clientX:120,clientY:100});assert.equal(e.game().lane,1);
   e.events.orientationchange();assert.equal(e.mode(),'paused');
+});
+
+test('moles: screen taps score once, reward combos, and three bombs end the run',()=>{
+  const e=engine('moles');e.start();const g=e.game(),c=e.element('mini-canvas'),h=g.holes[0];
+  h.kind='mole';h.duration=2;c.listeners.pointerdown({pointerId:1,clientX:h.x/2,clientY:h.y/2,preventDefault(){}});assert.equal(e.score(),100);
+  g.tap(h.x,h.y);assert.equal(e.score(),100);h.kind='mole';g.tap(h.x,h.y);assert.equal(e.score(),210);
+  for(let i=0;i<3;i++){h.kind='bomb';g.tap(h.x,h.y);}assert.equal(g.lives,0);assert.equal(e.mode(),'over');
+});
+test('moles: missed targets reset combo without losing lives; timer stops on pause and ends cleanly',()=>{
+  const e=engine('moles');e.start();const g=e.game();g.combo=5;g.holes[0].kind='mole';g.holes[0].duration=.1;g.holes[0].age=.09;e.update(.02);assert.equal(g.combo,0);assert.equal(g.lives,3);
+  const before=g.time;e.pause();e.update(10);assert.equal(g.time,before);e.pause();g.time=.01;e.update(.02);assert.equal(e.mode(),'over');
+});
+function clearMatch(g){g.board.forEach(row=>row.fill(0));g.selected=null;}
+function tapTile(g,r,c){g.tap(24+(c-.5)*72,68+(r-.5)*64);}
+function turns(path){let count=0,last=null;for(let i=1;i<path.length;i++){const d=`${path[i].r-path[i-1].r},${path[i].c-path[i-1].c}`;if(last&&last!==d)count++;last=d;}return count;}
+test('match: route respects zero, one and two bends, permits outer border, rejects blocked and mismatched tiles',()=>{
+  const e=engine('match');e.start();const g=e.game();clearMatch(g);g.board[2][2]=g.board[2][4]=1;
+  assert.equal(turns(g.route({r:2,c:2},{r:2,c:4})),0);g.board[2][4]=0;g.board[3][3]=1;assert.equal(turns(g.route({r:2,c:2},{r:3,c:3})),1);
+  g.board.forEach((row,r)=>row.forEach((_,c)=>{row[c]=r===0||r===9||c===0||c===7?0:2;}));g.board[1][1]=g.board[1][6]=1;
+  const outer=g.route({r:1,c:1},{r:1,c:6});assert.equal(turns(outer),2);assert.ok(outer.some(p=>p.r===0));
+  g.board[1][1]=2;g.board[1][6]=2;g.board[3][3]=g.board[6][4]=1;assert.equal(g.route({r:3,c:3},{r:6,c:4}),null);assert.equal(g.route({r:3,c:3},{r:3,c:4}),null);
+});
+test('match: a successful pair removes both tiles, awards time and advances after clearing',()=>{
+  const e=engine('match');e.start();const g=e.game();clearMatch(g);g.board[1][1]=g.board[1][2]=1;g.remaining=2;g.time=50;
+  tapTile(g,1,1);tapTile(g,1,1);assert.equal(g.selected,null);tapTile(g,1,1);tapTile(g,1,2);assert.equal(g.remaining,0);assert.equal(g.time,52);assert.equal(e.score(),1150);assert.ok(g.transition>0);
+  for(let i=0;i<121;i++)e.update(1/60);assert.equal(g.level,2);assert.equal(g.remaining,48);assert.ok(g.findMove());
+});
+test('match: hints and shuffle obey stock limits and preserve pair counts',()=>{
+  const e=engine('match');e.start();const g=e.game(),hist=()=>JSON.stringify(g.board.flat().filter(Boolean).sort((a,b)=>a-b)),before=hist();
+  for(let i=0;i<5;i++)g.action('hint');assert.equal(g.hints,0);assert.equal(g.hintPair.length,2);assert.ok(g.route(...g.hintPair));
+  for(let i=0;i<4;i++)g.action('shuffle');assert.equal(g.shuffles,0);assert.equal(hist(),before);assert.ok(g.findMove());
+  g.time=.01;e.update(.02);assert.equal(e.mode(),'over');
+});
+test('match: repeatedly clearing shuffled boards never leaves an unplayable deadlock',()=>{
+  const e=engine('match');for(let round=0;round<20;round++){e.start();const g=e.game();for(let pair=0;pair<24;pair++){const move=g.findMove();assert.ok(move,`deadlock on board ${round}, pair ${pair}`);assert.ok(turns(move.path)<=2);tapTile(g,move.a.r,move.a.c);tapTile(g,move.b.r,move.b.c);}assert.equal(g.remaining,0);}
+});
+test('commando: mobile left/right moves, auto-fire aims in that direction, and jump button works',()=>{
+  const e=engine('commando');e.start();const g=e.game();g.crates=[];g.enemies=[];const right=e.element('button-right'),jump=e.element('button-fire');
+  right.listeners.pointerdown({pointerId:1,preventDefault(){}});for(let i=0;i<20;i++)e.update(1/60);assert.ok(g.player.x>120);assert.ok(g.bullets.some(b=>!b.enemy&&b.vx>0));
+  right.listeners.pointerup({pointerId:1});jump.listeners.pointerdown({pointerId:2,preventDefault(){}});e.update(1/60);assert.equal(g.player.onGround,false);assert.ok(g.player.vy<0);jump.listeners.pointerup({pointerId:2});
+  for(let i=0;i<60;i++)e.update(1/60);assert.equal(g.player.onGround,true);assert.equal(g.player.y,536);
+});
+test('commando: enemy hits cost one life during invulnerability and rescuing heals',()=>{
+  const e=engine('commando');e.start();const g=e.game();g.enemies=[];g.crates=[];g.inv=0;
+  const shot=()=>({x:g.player.x,y:g.player.y,w:8,h:5,vx:0,vy:0,enemy:true});g.bullets=[shot()];e.update(1/60);assert.equal(g.lives,4);g.bullets=[shot()];e.update(1/60);assert.equal(g.lives,4);
+  const cage=g.cages[0];cage.hp=1;g.player.x=cage.x-100;g.bullets=[{x:cage.x,y:cage.y,w:10,h:5,vx:0,vy:0,enemy:false}];e.update(1/60);assert.equal(cage.rescued,true);assert.equal(g.rescued,1);assert.equal(g.lives,5);assert.equal(e.score(),500);
+});
+test('commando: destroying three mission bosses wins the run and preserves score',()=>{
+  const e=engine('commando');e.start();for(let stage=1;stage<=3;stage++){const g=e.game();assert.equal(g.level,stage);g.enemies=[];g.crates=[];g.cages=[];g.player.x=g.boss.x-160;g.boss.hp=1;g.bullets=[{x:g.boss.x,y:g.boss.y,w:12,h:5,vx:0,vy:0,enemy:false}];e.update(1/60);
+    if(stage<3){assert.ok(g.transition>0);for(let i=0;i<151;i++)e.update(1/60);}else assert.equal(e.mode(),'over');
+  }assert.equal(e.score(),12000);assert.equal(e.storage.get('arcade-best-commando'),'12000');
 });

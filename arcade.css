@@ -102,3 +102,35 @@
   .touch-controls[data-game=racer] .dpad button{width:190px}
   .drag-strip{width:200px}
 }
+.mole-art{background:#71875a}.match-art{background:#526e69}.commando-art{background:#8b9f97}
+.puzzle-tools{display:flex;justify-content:center;align-items:center;gap:16px;min-height:70px;padding:10px;background:#2c4035;position:relative;z-index:1}
+.puzzle-tools button{min-width:125px;min-height:48px;font-size:14px;background:#dce9b5;border-color:#b4c98c;color:#2d4736;border-radius:9px}
+.puzzle-tools button:disabled{opacity:.4;cursor:default}
+.touch-controls[data-game=moles],.touch-controls[data-game=match]{display:none}
+.touch-controls[data-game=commando]>p{display:none}
+.touch-controls[data-game=commando] .dpad{display:flex;gap:12px;flex:1}
+.touch-controls[data-game=commando] .dpad:after,.touch-controls[data-game=commando] [data-control=up],.touch-controls[data-game=commando] [data-control=down]{display:none}
+.touch-controls[data-game=commando] .dpad button{flex:1;width:70px;height:66px;font-size:26px}
+.touch-controls[data-game=commando] .fire-button{display:block;width:78px;height:78px;font-size:17px}
+@media(max-width:580px),(pointer:coarse) and (max-width:1100px){
+  .play-page[data-game=moles]{--control-height:0px}
+  .play-page[data-game=match]{--control-height:72px}
+  .play-page[data-game=commando]{--control-height:112px}
+  .touch-controls[data-game=commando]{height:112px;min-height:112px;gap:16px;padding:12px}
+  .touch-controls[data-game=commando] .dpad{min-width:0}
+  .touch-controls[data-game=commando] .dpad button{width:auto;min-width:54px;height:72px}
+  .touch-controls[data-game=commando] .fire-button{width:80px;height:80px;flex-shrink:0}
+  .puzzle-tools{height:72px;padding:10px;gap:14px}
+  .puzzle-tools button{flex:1;min-width:0;min-height:50px}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .puzzle-tools{grid-column:2;grid-row:2/4;flex-direction:column;height:auto;min-height:0;padding:8px}
+  .puzzle-tools button{flex:none;width:180px;height:52px}
+  .play-page[data-game=moles] .game-machine{grid-template-columns:minmax(220px,calc(var(--game-vh,100svh)*1.1));width:max-content}
+  .play-page[data-game=moles] .mini-screen,.play-page[data-game=moles] .machine-status{grid-column:1}
+  .touch-controls[data-game=commando]{flex-direction:column;height:auto;min-height:0;padding:4px;gap:10px;justify-content:center}
+  .touch-controls[data-game=commando] .dpad{flex:none;width:190px}
+  .touch-controls[data-game=commando] .dpad button{width:84px;height:56px}
+  .touch-controls[data-game=commando] .fire-button{width:105px;height:52px;border-radius:10px;font-size:14px}
+  .touch-controls[data-game=commando] .fire-button small{display:none}
+}
