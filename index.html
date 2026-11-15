@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#edeee5">
+  <meta name="description" content="雷电 THUNDERBOLT — 经典纵版空战。驾驶战机穿越海岛，升级火力，挑战巨型 Boss。支持键盘和手机触控。">
+  <title>雷电 THUNDERBOLT · Arcade Air Combat</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232e4236'/%3E%3Cpath d='M36 6 15 36h15l-3 22 22-32H34z' fill='%23d8ee7e'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="雷电首页"><span class="brand-icon">ϟ</span><span>THUNDERBOLT<span class="brand-sub">经典空战 / ARCADE SERIES</span></span></a>
+    <span class="edition">EST. 1990 <span>↗</span> REIMAGINED 2026</span>
+    <button id="sound" class="icon-button" aria-label="开启声音" aria-pressed="false">声音 OFF <span>♪</span></button>
+  </header>
+  <main>
+    <div class="intro-line"><span><i></i> READY FOR TAKEOFF</span><span>01 — PACIFIC FRONT</span></div>
+    <div class="arcade-layout">
+      <aside class="mission-panel">
+        <span class="eyebrow">THE ORIGINAL SKY FIGHTER</span>
+        <h1>雷电<span>THUNDER<br>BOLT<span class="title-dot">.</span></span></h1>
+        <p class="lead">引擎轰鸣，火力全开。<br>你的天空，由你守护。</p>
+        <div class="mission-card"><span class="eyebrow">YOUR MISSION / 作战任务</span><div class="mission-index">01 <span>太平洋前线</span></div><p>突破敌机编队，收集火力补给，<br>击败敌方空中要塞。</p><div class="coordinates">24° 18′ N &nbsp; 142° 36′ E <span>↗</span></div></div>
+        <div class="plane-blueprint" aria-hidden="true"><svg viewBox="0 0 240 160"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M120 10 130 63 198 107 198 118 130 103 130 133 147 147 147 153 120 146 93 153 93 147 110 133 110 103 42 118 42 107 110 63Z"/><path d="M120 10v144M35 90h170M100 60h40" stroke-dasharray="3 5"/><circle cx="120" cy="90" r="63" stroke-dasharray="2 6"/><path d="M117 48h6v25h-6zM50 127h40m60 0h40"/></g></svg><span>F-01 / LIGHTNING FIGHTER</span></div>
+      </aside>
+      <section class="cabinet" aria-label="雷电空战游戏">
+        <div class="scorebar"><div><span>1UP / 得分</span><strong id="score">000000</strong></div><div class="high-score"><span>HI-SCORE / 最高</span><strong id="best">000000</strong></div><button id="pause" class="pause-button" aria-label="暂停游戏" disabled>Ⅱ</button></div>
+        <div class="screen">
+          <canvas id="game" width="480" height="680" aria-label="空战战场，方向键或 WASD 移动，自动射击，空格释放炸弹，P 暂停"></canvas>
+          <div class="screen-grain" aria-hidden="true"></div>
+          <div id="boss-hud" class="boss-hud" hidden><span>WARNING — 空中要塞</span><div><i id="boss-health"></i></div></div>
+          <div id="overlay" class="overlay">
+            <div class="overlay-content"><span id="overlay-kicker" class="overlay-kicker">INSERT COIN? NO, JUST PLAY.</span><div class="wing-mark" aria-hidden="true">✦</div><h2 id="overlay-title">准备出击<span>READY, PILOT?</span></h2><p id="overlay-description">重返经典，开启你的王牌之旅。</p><button id="start" class="start-button">开始游戏 <span>↗</span></button><span id="overlay-hint" class="overlay-hint">按 ENTER 开始 · 自动开火</span></div>
+          </div>
+          <div id="announcement" class="announcement" role="status"></div>
+        </div>
+        <div class="statusbar"><span class="lives" id="lives" aria-label="剩余生命">♥ ♥ ♥</span><span id="weapon">FIRE LV. 01</span><button id="bomb" aria-label="释放炸弹，剩余3枚">✦ <span id="bombs">3</span> <small>SPACE</small></button></div>
+      </section>
+      <aside class="flight-panel">
+        <div class="live-label"><i></i> FLIGHT MANUAL <span>飞行手册</span></div>
+        <div class="instruction"><span class="step">01</span><div><h3>掌控方向</h3><p>方向键 / WASD 移动战机</p><div class="keys"><kbd>W</kbd><br><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>或 ↑ ↓ ← →</span></div></div></div>
+        <div class="instruction"><span class="step">02</span><div><h3>尽情开火</h3><p>自动射击，专注闪避与进攻。</p><span class="auto-label">↗ AUTO FIRE ENABLED</span></div></div>
+        <div class="instruction"><span class="step">03</span><div><h3>扭转战局</h3><p><kbd class="space-key">SPACE</kbd> 释放全屏炸弹</p><p>清除敌弹，危急时刻的底牌。</p></div></div>
+        <div class="supply-card"><span class="eyebrow">FIELD SUPPLIES / 战地补给</span><p><b class="pickup power">P</b><span>火力升级<small>更密集的弹幕，更强的战机。</small></span></p><p><b class="pickup bomb-pickup">B</b><span>炸弹补给<small>多一份火力，多一线生机。</small></span></p><p><b class="pickup heal">+</b><span>机体修复<small>恢复一格生命，重返战场。</small></span></p></div>
+        <p class="mobile-note">↗ 手机也能玩，按住战场拖动战机。<br><span>P / ESC 暂停 · M 切换声音</span></p>
+      </aside>
+    </div>
+    <footer><span>BUILT FOR THE LOVE OF ARCADE.</span><span class="footer-center">一架战机，一整片天空。</span><span>NO DOWNLOAD. JUST PLAY. <b>ϟ</b></span></footer>
+  </main>
+</body>
+</html>
