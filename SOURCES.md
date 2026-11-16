@@ -63,3 +63,18 @@
 - `roadrash.html` / `roadrash.js` 是独立 MD 播放器，复用输入源管理与八方向摇杆；`roadrash-controls.js` 提供 MD 按键映射与刹车优先。按住加速持续发送 B，可选择锁定油门；同时转向与攻击不会互相释放。踢人与攻击均按原版按下 / 松开时机触发，不使用街机连发。暂停、切后台、旋转屏幕、离开页面会释放所有按键并解除油门锁定。
 - 使用 Genesis Plus GX 原生内核加载同一 No-Intro ROM，完成标题、选赛道、赛前对话和首场比赛，并对比加速、刹车、转向、出拳与踢人的实际游戏帧。`assets/roadrash-original.png` 为实际运行捕获的画面。
 - 自动测试覆盖原版 ROM / 内核哈希、多点触控、刹车优先、油门锁定、开始、暂停、后台释放与加载失败重试。此验证不能替代浏览器 WebAssembly 启动和手机真机手感检查。
+
+
+## 涂鸦跳跃（Doodle Jump / 经典 HTML5 版）
+
+- 接入 https://doodlejump.io/play/ 公开提供的 Phaser 2.6.2 HTML5 游戏；角色、图像与游戏版权属于 Lima Sky，保留原始预载画面中的 Lima Sky / Cloud Games 标识。
+- 上游游戏脚本：https://doodlejump.io/play/js/build/production.min.js 。原始脚本 SHA-256：`61e62763c38c0f20aef448b2bd8c6340369a1d6b4f51b30466619b6e26a36e91`。
+- 自托管完整平台、弹簧、怪物、射击、螺旋帽、火箭背包与计分逻辑；没有以另一个自制平台引擎替换游戏。此项是 HTML5 网页版本，来源站点不隶属于 Lima Sky。
+- `vendor/doodle/game.js` 保留上游完整脚本，外加两项作用域包装：将直接存储访问映射至安全的独立存储适配器；停用游戏旧式 FullTilt 递归帧循环，由宿主在每帧原生游戏更新后应用感应速度。Phaser 自身的帧调度保持原样，重开不会累积旧感应循环。
+- `vendor/doodle/assets/` 包含上游的所有 WebP 图集、角色、位图字体、关卡数据和 MP3 音效。上游列出的 OGG 文件不可用；本项目使用 ffmpeg / libvorbis 从相同 MP3 生成 OGG 作为兼容格式。`vendor/doodle/manifest.json` 记录每个文件的字节数、SHA-256 与转换说明。
+- Phaser 2.6.2：https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.2/phaser.min.js ，MIT 许可证见 `vendor/doodle/PHASER-LICENSE.txt`；完整 Phaser 源码：https://github.com/photonstorm/phaser/tree/v2.6.2 。
+- 大厅预览图：https://doodlejump.io/thumbs/doodle-jump.webp ，本地 `assets/doodle-preview.webp`。
+- `doodle-motion.js` 实现 HTTPS 下的 DeviceOrientationEvent 用户点击授权、横竖屏轴转换、首次自然握持校准、死区、平滑、速度上限、无数据回退，以及暂停后的新样本校准。感应数据只在浏览器内使用。
+- `doodle.js` 负责载入、进度、错误重试、安全存储、最高分、暂停、全屏与原游戏输入适配。左右触控与键盘可覆盖感应，松手后恢复感应；切后台、旋转屏幕、离开页面释放按键并清空感应速度。默认静音；画面内与宿主暂停保持同步。
+- 自动测试覆盖感应授权同一用户操作、拒绝 / 异常 / 无设备回退、无样本超时、横竖屏轴、校准、停滞 / 恢复、授权竞态、触控并发、原游戏暂停与后台暂停、存储异常、资源哈希，以及直接执行上游的普通 / 断裂 / 一次性平台碰撞和弹簧、火箭背包逻辑。
+- 当前环境没有可用的浏览器预览工具；没有完成浏览器整局运行或手机真机传感器、声音与手感实测。

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f4f0db">
+<meta name="description" content="涂鸦跳跃经典网页版：绿色长鼻子小人、格子纸、弹簧、怪物与火箭背包。左右倾斜手机不断向上跳，支持 iPhone 感应授权、校准和触控操作。">
+<title>涂鸦跳跃 · Doodle Jump</title><link rel="stylesheet" href="doodle.css?v=tilt1">
+<script src="mobile.js?v=phone2" defer></script><script src="doodle-motion.js?v=tilt1" defer></script><script src="doodle.js?v=tilt1" defer></script>
+</head><body>
+<header><a href="./" class="back">← 大厅</a><div class="title"><strong>涂鸦跳跃</strong><small>DOODLE JUMP · 一直往上跳</small></div><button id="sound" aria-pressed="false">声音关</button><button id="fullscreen">全屏</button></header>
+<main>
+<div class="score-bar"><span>高度 <b id="score">0</b></span><span>最高 <b id="best">0</b></span><button id="pause" disabled aria-label="暂停游戏">Ⅱ</button></div>
+<section id="stage" aria-label="涂鸦跳跃游戏画面"><div id="game"></div>
+<div id="cover" class="cover"><img src="assets/doodle-preview.webp" alt="绿色长鼻子小人与经典涂鸦跳跃画面"><div><span>CLASSIC HTML5 EDITION</span><h1>涂鸦跳跃</h1><p>左右倾斜手机，踩着平台一直往上跳。<br>捡到火箭背包，一飞冲天！</p><button id="tilt-start" class="primary">开启感应并开始 ↗</button><button id="touch-start">触控开始</button><small>iPhone 请点“允许” · 建议竖屏游玩<br>握稳手机后开始，轻轻左右倾斜即可。</small></div></div>
+<div id="paused" class="cover" hidden><div><h2>已暂停</h2><p>握稳手机，继续时会重新校准。</p><button id="resume" class="primary">继续跳跃 ▶</button></div></div>
+</section>
+<div class="status"><span id="status" role="status" aria-live="polite">自动起跳 · 倾斜转向 · 点击画面射击</span></div>
+<section class="controls" aria-label="手机操作"><button id="left" data-direction="left" aria-label="向左移动" disabled>←</button><button id="shoot" disabled>射击 ↑</button><button id="right" data-direction="right" aria-label="向右移动" disabled>→</button></section>
+<section class="tools" aria-label="感应与游戏设置"><button id="motion" aria-pressed="false">手机感应 关</button><button id="calibrate" disabled>校准水平</button><button id="restart" disabled>重新开始</button></section>
+<p class="tip">感应不能用时，按住左右键也能玩。踩弹簧跳得更高，注意怪物和断裂平台。</p>
+</main>
+<input id="highscore" class="name-input" aria-label="游戏内纪录昵称" maxlength="16" value="Doodler" tabindex="-1">
+<footer>键盘：← → / A D 转向，空格射击，P 暂停，Enter 重开。<br>经典网页版 · Doodle Jump 角色与游戏版权属于 Lima Sky · <a href="SOURCES.md">来源与说明</a></footer>
+</body></html>

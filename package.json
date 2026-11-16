@@ -1,10 +1,10 @@
 {
   "name": "game-thunderbolt",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "private": true,
-  "description": "Mobile arcade collection with original Warriors of Fate, Metal Slug and Road Rash MD emulation",
+  "description": "Mobile arcade collection with classic Doodle Jump tilt controls and original arcade/MD games",
   "scripts": {
-    "check": "node --check game.js && node --check minigames.js && node --check lobby.js && node --check mobile.js && node --check extra-games.js && node --check warriors.js && node --check wof-controls.js && node --check wof.js && node --check route-original.js && node --check rom-loader.js && node --check roadrash-controls.js && node --check roadrash.js",
+    "check": "node --check game.js && node --check minigames.js && node --check lobby.js && node --check mobile.js && node --check extra-games.js && node --check warriors.js && node --check wof-controls.js && node --check wof.js && node --check route-original.js && node --check rom-loader.js && node --check roadrash-controls.js && node --check roadrash.js && node --check doodle-motion.js && node --check doodle.js && node --check vendor/doodle/game.js",
     "test": "node --test tests/*.test.cjs"
   }
 }

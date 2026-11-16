@@ -1,0 +1,330 @@
+{
+  "source": "https://doodlejump.io/play/",
+  "upstreamGameSha256": "61e62763c38c0f20aef448b2bd8c6340369a1d6b4f51b30466619b6e26a36e91",
+  "files": [
+    {
+      "path": "assets/audio/beake_platfrom.mp3",
+      "bytes": 8064,
+      "sha256": "94cd5142ece47b31ebf1cf41deff0ad4cfe3cfe1281b65c2c52a0ec95a3f9e30",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/beake_platfrom.ogg",
+      "bytes": 7472,
+      "sha256": "544a724348de79db4a8bacf64e88d699d6ed32b4ebe80d3ce5ce606d806b1908",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/black_hole.mp3",
+      "bytes": 8064,
+      "sha256": "78f37d760b25631881e40e6b7935f5fbe58d7b98738c8e76f7ab98c2a7f3c046",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/black_hole.ogg",
+      "bytes": 7593,
+      "sha256": "bd0364d5a92dc04c743328eab6efc6175e74404bc43b5df4437d647f3b488147",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/falling.mp3",
+      "bytes": 16256,
+      "sha256": "8aa7ce497391ea4f3358f5eefe3b06b6fd5ad00ac96944ff7542e730deb5e26d",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/falling.ogg",
+      "bytes": 16084,
+      "sha256": "dbf82f139ad6f2b6454525b22441ac26668b473bed6528dd03f9e5efc816135f",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/jetpack.mp3",
+      "bytes": 24448,
+      "sha256": "0381752eaa6836544f097a7369aa9181e1f8058801750cb6a4136e63fe78d613",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/jetpack.ogg",
+      "bytes": 27645,
+      "sha256": "430ae105d6c75c660cae09c508f6254bc676126b9330a673499a2d3686c9631b",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/jump.mp3",
+      "bytes": 1720,
+      "sha256": "557f524fdba986151b4e63e5380c9a27938e20b75648d2b5a03cf27279554c4c",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/jump.ogg",
+      "bytes": 4330,
+      "sha256": "b1786eea843ba8e50912ea80039cea23fb644ac78ec3847483ebee6f3be97676",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/jumponmonster.mp3",
+      "bytes": 12160,
+      "sha256": "a4fff6d7d8ce14e2a69ac572396e6e4907e1a7114efd183d05f308fdd69c0a74",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/jumponmonster.ogg",
+      "bytes": 9613,
+      "sha256": "8339105cb8a08048d9930ded90180e8659b20d2fcf16b75f8c57db24dd3da784",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/monster_hit.mp3",
+      "bytes": 12160,
+      "sha256": "0c92836c5326dd029be553824df141b57b232c03690dc87a2a19ec307369badb",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/monster_hit.ogg",
+      "bytes": 13005,
+      "sha256": "0b1af9561c6a45db009c886b379e6f970de026a74d0d040c5701081880f15232",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/monster_kill.mp3",
+      "bytes": 12160,
+      "sha256": "bceb7e555063eb02841c30865766c27c2755b88c568b2d81dc82455d5029b36e",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/monster_kill.ogg",
+      "bytes": 13070,
+      "sha256": "35e9551d4be6f482f4ac366bc06bbafc121ac0dec5fb028390b728c4db510a3e",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/monster_warning.mp3",
+      "bytes": 44928,
+      "sha256": "1d82fea07fd60efb30a6a4d0d025f4eecb1d47977323f6217b3a18d6db903c2b",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/monster_warning.ogg",
+      "bytes": 40863,
+      "sha256": "6170ac3c1b7512b4f486531961f7c914fe02b7d960009a9c32ac953f4783891d",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/propeller.mp3",
+      "bytes": 32640,
+      "sha256": "1ba65e708acef992c366c681ce1e6a54cfd9876023fdaa6281e69a06aafb7ab0",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/propeller.ogg",
+      "bytes": 32226,
+      "sha256": "59bc41a83642d5ab5939fe108f90d94a18d24276c1adfb05add60fb766d94fcf",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/shoot.mp3",
+      "bytes": 3968,
+      "sha256": "69b7b650cc2d292920200daed95a5b88712d65087010de2efe963f41e2398634",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/shoot.ogg",
+      "bytes": 5488,
+      "sha256": "11fa14132a3f3978ac539b112fb83b1b0dbf4fd585dd3fa79a40528f7e93e174",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/shoot2.mp3",
+      "bytes": 3968,
+      "sha256": "5aad7fcfeefb9dd6eab4cb22fc113dffeeed2c06a39163445008073a682e06af",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/shoot2.ogg",
+      "bytes": 5888,
+      "sha256": "53df00728209093e50f0b5d3c9ca04b7f143688b977093945a577df4ec6c5060",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/spring.mp3",
+      "bytes": 8064,
+      "sha256": "d2c7920f6680a4eda031553807a083d9c9aeb5286dd00fadb372d0cadc781a0a",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/spring.ogg",
+      "bytes": 10637,
+      "sha256": "5b2f0828b082f9971e0745bbe23b51b10976a42adb916f8f46212a8c0e52a801",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/ufo_abduct.mp3",
+      "bytes": 16256,
+      "sha256": "f9c5bb1b7a362f61a824131b4296089791799fcb03f618db52678d267db029a9",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/ufo_abduct.ogg",
+      "bytes": 15127,
+      "sha256": "8955a65e7e0da6bc7d3398d71eb03dcb916560876cfa0d36ef5c5bf704250de8",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/ufo_kill.mp3",
+      "bytes": 12160,
+      "sha256": "598162103869ee041cc05c9252b4ff2b58ed996af063ad31b2e5e61c6b928123",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/ufo_kill.ogg",
+      "bytes": 13889,
+      "sha256": "65dade175f163cce9acbb0fa25d6d3ed97013ed22b35ae44cf6aa55940dc6302",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/ufo_warning.mp3",
+      "bytes": 36736,
+      "sha256": "145f21c3bae0079b3468655f2d60f8041cf278da545b7ef883346f93f10fd9a4",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/ufo_warning.ogg",
+      "bytes": 37320,
+      "sha256": "aa75cd3b4c825a275cae34d0085bfae271a9f11d5b5fab228c4c5801bc0ec292",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/audio/white.mp3",
+      "bytes": 8064,
+      "sha256": "bdb8163eea15a816209fdbb2c693dcf5dd4045b205f269989b715d82fedd4fda",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/audio/white.ogg",
+      "bytes": 7391,
+      "sha256": "38a995fe913bdb07865f6219ce624bfa3ca31fe73eeff2b88796a8c32e895b46",
+      "source": "converted from matching source MP3 with ffmpeg/libvorbis"
+    },
+    {
+      "path": "assets/data/skin0Scenes.json",
+      "bytes": 12202,
+      "sha256": "575d3da369058c4ee9cf48df69d4e71892ac2c72872dd94aa7721659729e5266",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/data/statachieve.json",
+      "bytes": 1712,
+      "sha256": "8829f951afd1c6ba64997c04d46eb5cdba6e513ebeb4b3b622c0f82c69f7fff0",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/fonts/bitmapFont.fnt",
+      "bytes": 11696,
+      "sha256": "a0564b2eec12baa81a4aceb9c208d706498675f658aec65f5635f60630649211",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/fonts/bitmapFont2.fnt",
+      "bytes": 11697,
+      "sha256": "46f49d451e12231044d50c203360613efe42cb9f4e54cf6b8370b976e728a356",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/fonts/bitmapFont2_0.webp",
+      "bytes": 15868,
+      "sha256": "a0b01b7a182a46369ba89af68c40dbc001ddfb79429d13bbdf6577b30a197629",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/fonts/bitmapFont_0.webp",
+      "bytes": 15868,
+      "sha256": "78d60b3c194e67df6ba569b3fabe48389b7a4a7f582b7c8a6ed80bc62a7b7e96",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/Preloader2.webp",
+      "bytes": 1548,
+      "sha256": "064469f6cc3cf024f82a9e3271cf0bcb72cd7bb2ebf40b0535533399ac468c7b",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/Preloader21.webp",
+      "bytes": 22386,
+      "sha256": "7763eb2e432b7a3bc262c7fcfc04f6f4232dca7497f33c75721704d45e4705ee",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/Preloader22.webp",
+      "bytes": 1308,
+      "sha256": "3190c3201b96dc515111350272110ffdb8282508939c1d3973ecd4ca32fa6924",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/appstore.webp",
+      "bytes": 34,
+      "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/atlas.json",
+      "bytes": 11143,
+      "sha256": "16a4b54dc46a44fc2c626595c8f855f21912426dd194fcbc6b485de0b1b38b63",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/atlas.webp",
+      "bytes": 357488,
+      "sha256": "dd49808b7331cf4bf12942a0ce7649bc4eabf09d90ca00325b81505d51622313",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/atlas2.json",
+      "bytes": 9745,
+      "sha256": "30fc3e6982a83683aa80d9fb59b8b350b5e91a3bfbb206b5dbf191ffd321a7e1",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/atlas2.webp",
+      "bytes": 452460,
+      "sha256": "aa3c714012dec6759f9a2ad92d367d5475faabc9375586bd20740b71490e9889",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/atlas3.json",
+      "bytes": 576,
+      "sha256": "1c4d5aeb4dfe33cf3d92a05e769ea4d32f2dbd46eda0bc913071221deea11e86",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/atlas3.webp",
+      "bytes": 655620,
+      "sha256": "b38074bab5cf244d36d5c74247101690cb606849978b511655e31433ab20e627",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/googleplay.webp",
+      "bytes": 34,
+      "sha256": "86be52bdb7547413cafb3ed175a806a798c65de98b40849e0b974c47d187de65",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/playerSheet.webp",
+      "bytes": 7014,
+      "sha256": "62cc9b5dc0802e22a2b886d986f1446493f3884a5b5f3c4825bc3bd6714d1561",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/popupAtlas.json",
+      "bytes": 934,
+      "sha256": "5784c73fc6fc98340146546d00ed2fe23a91e6d4967eb8d7422fb6380f702dc9",
+      "source": "upstream"
+    },
+    {
+      "path": "assets/images/popupAtlas.webp",
+      "bytes": 335484,
+      "sha256": "41d99e2af2373d4c1a0aad4561c962f1f8c7787e484f24fa96be35722e19b4f8",
+      "source": "upstream"
+    }
+  ]
+}
