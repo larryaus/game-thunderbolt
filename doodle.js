@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $=id=>document.getElementById(id),directions=new Map();
-  let game=null,ready=false,loading=false,muted=true,paused=false,loadFailed=false,best=0,lastSave=0;
+  let game=null,ready=false,loading=false,muted=true,paused=false,loadFailed=false,best=0,lastSave=0,bootTimer=null;
   const cache=new Map();
   function getStore(key){try{return localStorage.getItem(key);}catch{return cache.get(key)??null;}}
   function putStore(key,value){cache.set(key,String(value));try{localStorage.setItem(key,String(value));}catch{}}
@@ -26,7 +26,8 @@
     $('motion').setAttribute('aria-pressed',String(enabled));
     $('motion').textContent=state==='requesting'?'等待授权…':state==='waiting'?'感应校准中…':state==='on'?'手机感应 开':'手机感应 关';
     $('motion').disabled=state==='requesting';$('calibrate').disabled=state!=='on'||paused;
-    if(state==='on')status('感应已开启：轻轻左右倾斜，点击画面射击。');
+    if(loading||loadFailed)return;
+    if(state==='on'&&!loading&&!loadFailed)status('感应已开启：轻轻左右倾斜，点击画面射击。');
     if(state==='waiting')status('请自然握稳手机，正在等待感应数据…');
     if(state==='denied')status('未获得感应权限，可用左右按钮；也可再次点“手机感应”授权。');
     if(state==='unavailable')status('当前浏览器没有提供感应数据，请用左右按钮或键盘。');
@@ -77,7 +78,9 @@
     game.state.start('Game');refresh();wakeAudio();
   }
   function fail(text){
-    loadFailed=true;loading=false;ready=false;paused=false;if(game)game.paused=true;motion.suspend();refresh();
+    loadFailed=true;loading=false;ready=false;paused=false;
+    if(bootTimer!==null)window.clearTimeout(bootTimer);bootTimer=null;
+    if(game?.isBooted&&game.sound)game.paused=true;motion.suspend();refresh();
     $('cover').hidden=false;$('tilt-start').disabled=false;$('touch-start').disabled=false;
     $('tilt-start').textContent='加载失败，点击重试';status(text);
   }
@@ -88,6 +91,9 @@
     const D=window.Doodle,boot=D.BootState.init;
     D.BootState.init=function(){
       boot.apply(this,arguments);this.load.baseURL='vendor/doodle/';this.game.sound.mute=muted;
+      // Phaser creates these signals during boot, after the Game constructor returns.
+      this.game.onPause.add(()=>{if(ready&&!paused){paused=true;clear();motion.suspend();saveScore();refresh();}});
+      this.game.onResume.add(()=>{if(ready&&paused){paused=false;clear();motion.resume();refresh();}});
       this.load.onFileError.add(key=>fail('游戏资源加载失败：'+key+'。请检查网络后重试。'));
       this.load.onFileComplete.add(percent=>{if(loading)status('正在加载经典游戏 '+percent+'%…');});
     };
@@ -98,7 +104,8 @@
       object.create=function(){
         create.apply(this,arguments);
         if(name==='GameState'){
-          if(loadFailed)return;loading=false;ready=true;paused=false;$('cover').hidden=true;
+          if(loadFailed)return;if(bootTimer!==null)window.clearTimeout(bootTimer);bootTimer=null;
+          loading=false;ready=true;paused=false;$('cover').hidden=true;
           status(motion.active?'感应已开启，左右倾斜转向。':'已开始：按住左右键转向，点画面或“射击”打怪物。');
           refresh();if(document.hidden)pause(true);
         }
@@ -114,11 +121,10 @@
   async function boot(){
     if(loadFailed){location.reload();return;}if(loading||ready)return;
     loading=true;$('tilt-start').disabled=true;$('touch-start').disabled=true;status('正在加载经典网页版，请稍候…');
+    bootTimer=window.setTimeout(()=>{if(loading)fail('游戏加载超时，请检查网络后点击重试。');},30000);
     try{
       await script('vendor/doodle/phaser.min.js');await script('vendor/doodle/game.js');hookEngine();
       game=new Phaser.Game(635,955,Phaser.CANVAS,'game');window.Doodle.game=game;
-      game.onPause.add(()=>{if(ready&&!paused){paused=true;clear();motion.suspend();saveScore();refresh();}});
-      game.onResume.add(()=>{if(ready&&paused){paused=false;clear();motion.resume();refresh();}});
       for(const [name,key]of [['Boot','BootState'],['Preload','PreloadState'],['Menu','MenuState'],['Game','GameState'],['Settings','SettingsState'],['Calibrate','CalibrateState'],['Scores','ScoresState']])game.state.add(name,window.Doodle[key]);
       $('cover').hidden=true;game.state.start('Boot');
     }catch(error){fail(error.message||'游戏启动失败，请重新加载。');}
@@ -131,7 +137,7 @@
   });
   $('calibrate').addEventListener('click',()=>{motion.calibrate();status('已将当前握持角度设为水平，轻轻左右倾斜即可。');});
   $('pause').addEventListener('click',()=>pause(!paused));$('resume').addEventListener('click',()=>pause(false));$('restart').addEventListener('click',start);
-  $('sound').addEventListener('click',()=>{muted=!muted;$('sound').textContent=muted?'声音关':'声音开';$('sound').setAttribute('aria-pressed',String(!muted));if(game)game.sound.mute=muted;if(!muted)wakeAudio();});
+  $('sound').addEventListener('click',()=>{muted=!muted;$('sound').textContent=muted?'声音关':'声音开';$('sound').setAttribute('aria-pressed',String(!muted));if(game?.sound)game.sound.mute=muted;if(!muted)wakeAudio();});
   $('fullscreen').addEventListener('click',async()=>{
     try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else status('此浏览器可直接竖屏游玩，或使用“添加到主屏幕”。');}catch{status('此浏览器可直接竖屏游玩。');}
   });
@@ -156,6 +162,7 @@
   window.addEventListener('blur',()=>pause(true));document.addEventListener('visibilitychange',()=>{if(document.hidden)pause(true);});
   window.addEventListener('orientationchange',()=>{motion.calibrate();pause(true);});
   window.addEventListener('resize',()=>game?.scale?.refresh?.());
-  window.addEventListener('pagehide',()=>{saveScore();clear();motion.disable();if(game)game.paused=true;});
+  window.addEventListener('error',e=>{if(loading&&(!e.filename||/doodle/.test(e.filename)))fail('游戏启动出错，请点击重试。');});
+  window.addEventListener('pagehide',()=>{saveScore();clear();motion.disable();if(bootTimer!==null)window.clearTimeout(bootTimer);if(game?.isBooted&&game.sound)game.paused=true;});
   refresh();
 })();

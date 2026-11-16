@@ -40,7 +40,7 @@ test('disabling while permission is pending prevents late grants from attaching 
   let resolve;const e=environment({requestPermission:()=>new Promise(r=>resolve=r)}),m=new Motion(e.env);
   const pending=m.enable();m.disable();resolve('granted');assert.equal(await pending,false);assert.equal(m.state,'off');assert.equal(e.events.deviceorientation,undefined);
 });
-function player(blocked=false,permission='granted'){
+function player(blocked=false,permission='granted',bootMode='deferred'){
   const e=environment({requestPermission:async()=>permission}),els=new Map(),events=e.events,storage=new Map(),scripts=[];
   function el(id){if(!els.has(id))els.set(id,{id,style:{},dataset:{},hidden:false,disabled:false,attrs:{},listeners:{},setAttribute(k,v){this.attrs[k]=v;},addEventListener(k,f){this.listeners[k]=f;},setPointerCapture(){}});return els.get(id);}
   const buttons=['left','right'].map(id=>{el(id).dataset.direction=id;return el(id);});
@@ -52,22 +52,40 @@ function player(blocked=false,permission='granted'){
   D.GameState={create(){this.player={alive:true,frame:0,scale:{setTo(){}},body:{velocity:{x:0,y:0}}};this.cursors={left:{isDown:false},right:{isDown:false}};this.score=0;this.GYRO_SENSE=40;},update(){updates++;},playerShoot(){shots++;},gameOver(){this.player.alive=false;}};
   D.CalibrateState={create(){},update(){}};D.SettingsState={};D.ScoresState={};window.Doodle=D;
   class Game{
-    constructor(){game=this;this.height=955;this.sound={};this.input={keyboard:{reset(){}}};this.scale={refresh(){}};this.onPause=signal();this.onResume=signal();
+    constructor(){game=this;this.isBooted=false;this.height=955;this.sound=null;this.input={keyboard:{reset(){}}};this.scale={refresh(){}};this.onPause=null;this.onResume=null;
       this.load={onFileError:signal(),onFileComplete:signal()};this.state={current:'',states:{},add:(n,o)=>{o.game=this;o.state=this.state;o.load=this.load;this.state.states[n]=o;},getCurrentState:()=>this.state.states[this.state.current],start:n=>{
+        if(n==='Boot'&&!this.isBooted){if(bootMode!=='hang')setImmediate(()=>{this.isBooted=true;this.onPause=signal();this.onResume=signal();this.sound={};this.state.start(n);});return;}
         this.state.current=n;const s=this.state.states[n];s.init?.();s.create?.();if(n==='Boot')this.state.start('Menu');
       }};
     }
-    set paused(on){const before=this._paused;this._paused=on;if(before!==on)(on?this.onPause:this.onResume).emit();}
+    set paused(on){if(!this.isBooted)throw Error('Phaser components not initialized');const before=this._paused;this._paused=on;if(before!==on)(on?this.onPause:this.onResume).emit();}
     get paused(){return !!this._paused;}
   }
   vm.runInNewContext(fs.readFileSync(path.join(root,'doodle.js'),'utf8'),{window,document,Phaser:{Game,CANVAS:1},DoodleMotion:Motion,localStorage:{getItem:k=>{if(blocked)throw Error('denied');return storage.get(k)??null;},setItem(k,v){if(blocked)throw Error('denied');storage.set(k,v);}},location:{reload(){reloads++;}},setTimeout:e.env.setTimeout});
-  async function boot(tilt=false){el(tilt?'tilt-start':'touch-start').listeners.click();await new Promise(setImmediate);}
+  async function boot(tilt=false){el(tilt?'tilt-start':'touch-start').listeners.click();await new Promise(setImmediate);await new Promise(setImmediate);}
   function pointer(id,pointerId=1){el(id).listeners.pointerdown({pointerId,preventDefault(){}});}
   return{...e,el,window,document,scripts,storage,boot,pointer,game:()=>game,state:()=>game.state.getCurrentState(),update:()=>game.state.getCurrentState().update(),counts:()=>({shots,updates,reloads}),events};
 }
 test('classic player loads local Phaser and engine, scopes assets to vendor and starts the native game',async()=>{
   const p=player();assert.equal(p.el('left').disabled,true);await p.boot();assert.deepEqual(p.scripts.map(s=>s.src),['vendor/doodle/phaser.min.js','vendor/doodle/game.js']);
   assert.equal(p.game().load.baseURL,'vendor/doodle/');assert.equal(p.game().state.current,'Game');assert.equal(p.el('cover').hidden,true);assert.equal(p.el('left').disabled,false);
+});
+test('shipped Phaser constructor really defers signal initialization; host waits for Boot.init',()=>{
+  const source=fs.readFileSync(path.join(root,'vendor/doodle/phaser.min.js'),'utf8'),start=source.indexOf('c.Game=function'),end=source.indexOf(',c.Game.prototype=',start);
+  const c={GAMES:[],AUTO:0,Device:{whenReady(){}},Signal:function(){},RandomDataGenerator:function(){},StateManager:function(){}};
+  vm.runInNewContext(source.slice(start,end),{c});const game=new c.Game(635,955,1,'game');
+  assert.equal(game.isBooted,false);assert.equal(game.onPause,null);assert.equal(game.sound,null);
+});
+test('a stalled engine can time out or report an async error before Phaser components exist, with usable retry',async()=>{
+  for(const error of [false,true]){
+    const p=player(false,'granted','hang');await p.boot(true);assert.equal(p.game().isBooted,false);
+    if(error)p.events.error({filename:'vendor/doodle/phaser.min.js'});else p.expire();
+    assert.equal(p.el('cover').hidden,false);assert.equal(p.el('touch-start').disabled,false);assert.equal(p.el('paused').hidden,true);
+    p.el('touch-start').listeners.click();assert.equal(p.counts().reloads,1);
+  }
+});
+test('sound and leaving the page are safe while the real engine components are still uninitialized',async()=>{
+  const p=player(false,'granted','hang');await p.boot();p.el('sound').listeners.click();p.events.pagehide();assert.equal(p.game().sound,null);
 });
 test('tilt drives native velocity and touch temporarily overrides it without disabling tilt',async()=>{
   const p=player();await p.boot(true);p.sample(0);for(let i=0;i<10;i++)p.sample(18);p.update();assert.ok(p.state().player.body.velocity.x>400);
